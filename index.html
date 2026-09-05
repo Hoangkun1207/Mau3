@@ -1,0 +1,7973 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#090706">
+<title>AETERNUM | A Life in Chapters</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,500;1,600&family=DM+Mono&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+
+/* =========================================
+   RESET
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+    background:#090706;
+}
+
+body{
+    min-height:100vh;
+    overflow-x:hidden;
+    color:#f5eee3;
+    background:
+        radial-gradient(
+            circle at 50% -10%,
+            #33241b 0%,
+            #120d0a 35%,
+            #090706 75%
+        );
+    font-family:"Manrope",sans-serif;
+}
+
+body.loading{
+    overflow:hidden;
+}
+
+a{
+    color:inherit;
+    text-decoration:none;
+}
+
+button{
+    font:inherit;
+}
+
+::selection{
+    color:#17100b;
+    background:#d9b985;
+}
+
+
+/* =========================================
+   VARIABLES
+========================================= */
+
+:root{
+    --bg:#090706;
+    --bg-soft:#100b08;
+    --paper:#e8d8bc;
+    --paper-dark:#b69a71;
+    --gold:#d7ad6c;
+    --gold-light:#f1d19a;
+    --text:#f7efe3;
+    --muted:#a89b8d;
+    --line:rgba(232,216,188,.15);
+}
+
+
+/* =========================================
+   WEBGL
+========================================= */
+
+#webgl-container{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    pointer-events:none;
+    overflow:hidden;
+}
+
+#webgl-container canvas{
+    display:block;
+    width:100%!important;
+    height:100%!important;
+}
+
+
+/* =========================================
+   NOISE OVERLAY
+========================================= */
+
+.noise{
+    position:fixed;
+    inset:0;
+    z-index:50;
+    pointer-events:none;
+    opacity:.045;
+    background-image:
+        url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+}
+
+
+/* =========================================
+   LOADER
+========================================= */
+
+#loader{
+    position:fixed;
+    inset:0;
+    z-index:10000;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#090706;
+}
+
+.loader-content{
+    width:min(420px,82vw);
+    text-align:center;
+}
+
+.loader-book{
+    position:relative;
+    width:82px;
+    height:112px;
+    margin:0 auto 30px;
+    transform:perspective(500px) rotateY(-18deg);
+}
+
+.loader-book::before,
+.loader-book::after{
+    content:"";
+    position:absolute;
+    top:0;
+    width:42px;
+    height:112px;
+    background:linear-gradient(
+        90deg,
+        #9d7543,
+        #e2c28c 55%,
+        #ae8049
+    );
+    border:1px solid rgba(255,230,180,.3);
+}
+
+.loader-book::before{
+    left:0;
+    transform-origin:right center;
+    border-radius:3px 1px 1px 3px;
+}
+
+.loader-book::after{
+    right:0;
+    background:linear-gradient(
+        90deg,
+        #d9bb84,
+        #8f653a
+    );
+    border-radius:1px 3px 3px 1px;
+}
+
+.loader-spine{
+    position:absolute;
+    left:50%;
+    top:0;
+    z-index:2;
+    width:4px;
+    height:112px;
+    transform:translateX(-50%);
+    background:#53391f;
+    box-shadow:0 0 12px rgba(215,173,108,.25);
+}
+
+.loader-kicker{
+    margin-bottom:12px;
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:4px;
+}
+
+.loader-title{
+    margin-bottom:28px;
+    font-family:"Cormorant Garamond",serif;
+    font-size:42px;
+    font-weight:500;
+    letter-spacing:1px;
+}
+
+.loader-track{
+    width:100%;
+    height:1px;
+    overflow:hidden;
+    background:rgba(255,255,255,.12);
+}
+
+#loaderProgress{
+    width:0%;
+    height:100%;
+    background:linear-gradient(
+        90deg,
+        var(--paper-dark),
+        var(--gold-light)
+    );
+    transition:width .25s ease;
+}
+
+.loader-bottom{
+    display:flex;
+    justify-content:space-between;
+    margin-top:12px;
+    color:var(--muted);
+    font-family:"DM Mono",monospace;
+    font-size:9px;
+    letter-spacing:2px;
+}
+
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+#navbar{
+    position:fixed;
+    top:0;
+    left:0;
+    z-index:100;
+    width:100%;
+    padding:22px 5vw;
+    transition:
+        background .4s ease,
+        padding .4s ease,
+        border-color .4s ease;
+}
+
+#navbar.scrolled{
+    padding:15px 5vw;
+    background:rgba(9,7,6,.72);
+    border-bottom:1px solid var(--line);
+    backdrop-filter:blur(18px);
+}
+
+.nav-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    max-width:1500px;
+    margin:auto;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:12px;
+}
+
+.logo-mark{
+    display:grid;
+    place-items:center;
+    width:35px;
+    height:35px;
+    border:1px solid rgba(215,173,108,.65);
+    color:var(--gold-light);
+    font-family:"Cormorant Garamond",serif;
+    font-size:23px;
+}
+
+.logo-text{
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+.nav-links{
+    display:flex;
+    align-items:center;
+    gap:28px;
+}
+
+.nav-links a{
+    position:relative;
+    color:var(--muted);
+    font-size:11px;
+    letter-spacing:1px;
+    transition:color .3s ease;
+}
+
+.nav-links a::after{
+    content:"";
+    position:absolute;
+    left:0;
+    bottom:-7px;
+    width:0;
+    height:1px;
+    background:var(--gold);
+    transition:width .3s ease;
+}
+
+.nav-links a:hover{
+    color:var(--text);
+}
+
+.nav-links a:hover::after{
+    width:100%;
+}
+
+.nav-cta{
+    padding:11px 17px;
+    border:1px solid rgba(215,173,108,.5);
+    color:var(--gold-light)!important;
+    transition:
+        background .3s ease,
+        color .3s ease!important;
+}
+
+.nav-cta:hover{
+    background:var(--gold);
+    color:#1a1008!important;
+}
+
+.nav-cta::after{
+    display:none;
+}
+
+#menuToggle{
+    display:none;
+    width:42px;
+    height:42px;
+    border:0;
+    color:var(--text);
+    background:transparent;
+    font-size:23px;
+    cursor:pointer;
+}
+
+
+/* =========================================
+   MAIN
+========================================= */
+
+main{
+    position:relative;
+    z-index:5;
+}
+
+
+/* =========================================
+   HERO
+========================================= */
+
+.hero{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:130px 5vw 70px;
+}
+
+.hero-frame{
+    position:absolute;
+    inset:26px;
+    border:1px solid rgba(232,216,188,.08);
+    pointer-events:none;
+}
+
+.hero-frame::before,
+.hero-frame::after{
+    content:"";
+    position:absolute;
+    width:70px;
+    height:70px;
+    border-color:rgba(215,173,108,.45);
+}
+
+.hero-frame::before{
+    top:-1px;
+    left:-1px;
+    border-top:1px solid;
+    border-left:1px solid;
+}
+
+.hero-frame::after{
+    right:-1px;
+    bottom:-1px;
+    border-right:1px solid;
+    border-bottom:1px solid;
+}
+
+.hero-content{
+    position:relative;
+    z-index:3;
+    width:min(1050px,100%);
+    text-align:center;
+}
+
+.hero-kicker{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:25px;
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:4px;
+}
+
+.hero-kicker::before,
+.hero-kicker::after{
+    content:"";
+    width:35px;
+    height:1px;
+    background:var(--gold);
+}
+
+.hero-title{
+    overflow:hidden;
+    font-family:"Cormorant Garamond",serif;
+    font-size:clamp(72px,12vw,180px);
+    font-weight:500;
+    line-height:.72;
+    letter-spacing:-5px;
+}
+
+.hero-title .line{
+    display:block;
+}
+
+.hero-title em{
+    color:var(--gold-light);
+    font-weight:500;
+}
+
+.hero-subtitle{
+    width:min(600px,100%);
+    margin:35px auto 0;
+    color:var(--muted);
+    font-size:14px;
+    line-height:1.9;
+}
+
+.hero-actions{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:16px;
+    margin-top:34px;
+}
+
+.hero-button{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:175px;
+    min-height:52px;
+    padding:0 25px;
+    border:1px solid var(--gold);
+    color:#21150b;
+    background:var(--gold-light);
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:1px;
+    transition:
+        transform .3s ease,
+        box-shadow .3s ease;
+}
+
+.hero-button:hover{
+    transform:translateY(-4px);
+    box-shadow:
+        0 15px 40px
+        rgba(215,173,108,.22);
+}
+
+.hero-button.secondary{
+    color:var(--paper);
+    background:rgba(255,255,255,.03);
+    border-color:rgba(232,216,188,.2);
+}
+
+.scroll-indicator{
+    position:absolute;
+    left:50%;
+    bottom:35px;
+    z-index:4;
+    transform:translateX(-50%);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:12px;
+    color:var(--muted);
+    font-family:"DM Mono",monospace;
+    font-size:8px;
+    letter-spacing:3px;
+}
+
+.scroll-line{
+    position:relative;
+    width:1px;
+    height:55px;
+    overflow:hidden;
+    background:rgba(255,255,255,.16);
+}
+
+.scroll-line span{
+    position:absolute;
+    top:-50%;
+    left:0;
+    width:100%;
+    height:50%;
+    background:var(--gold);
+    animation:scrollDrop 1.8s infinite ease-in-out;
+}
+
+@keyframes scrollDrop{
+    0%{
+        top:-50%;
+    }
+
+    100%{
+        top:100%;
+    }
+}
+
+
+/* =========================================
+   CHAPTER INTRO
+========================================= */
+
+.chapter-intro{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:130px 8vw;
+}
+
+.chapter-intro-grid{
+    display:grid;
+    grid-template-columns:.7fr 1.3fr;
+    align-items:center;
+    gap:70px;
+    width:100%;
+    max-width:1400px;
+    margin:auto;
+}
+
+.chapter-index{
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:4px;
+}
+
+.chapter-line{
+    width:80px;
+    height:1px;
+    margin:25px 0;
+    background:var(--gold);
+}
+
+.chapter-small{
+    max-width:250px;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.9;
+}
+
+.chapter-heading{
+    font-family:"Cormorant Garamond",serif;
+    font-size:clamp(58px,8vw,125px);
+    font-weight:500;
+    line-height:.82;
+    letter-spacing:-3px;
+}
+
+.chapter-heading span{
+    display:block;
+    color:var(--gold-light);
+    font-style:italic;
+}
+
+
+/* =========================================
+   MEMORY SECTION
+========================================= */
+
+.memories{
+    position:relative;
+    padding:120px 5vw;
+}
+
+.memory-header{
+    display:flex;
+    align-items:end;
+    justify-content:space-between;
+    gap:30px;
+    width:100%;
+    max-width:1400px;
+    margin:0 auto 70px;
+}
+
+.section-label{
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+.section-title{
+    margin-top:18px;
+    font-family:"Cormorant Garamond",serif;
+    font-size:clamp(52px,7vw,100px);
+    font-weight:500;
+    line-height:.9;
+    letter-spacing:-2px;
+}
+
+.section-text{
+    max-width:360px;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.9;
+}
+
+
+/* =========================================
+   MEMORY CARDS
+========================================= */
+
+.memory-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:20px;
+    max-width:1400px;
+    margin:auto;
+}
+
+.memory-card{
+    position:relative;
+    min-height:500px;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:
+        linear-gradient(
+            145deg,
+            rgba(255,255,255,.07),
+            rgba(255,255,255,.01)
+        );
+    backdrop-filter:blur(12px);
+}
+
+.memory-card:nth-child(2){
+    transform:translateY(90px);
+}
+
+.memory-card:nth-child(3){
+    transform:translateY(30px);
+}
+
+.memory-image{
+    position:absolute;
+    inset:0;
+    opacity:.34;
+    background:
+        radial-gradient(
+            circle at 50% 30%,
+            rgba(214,174,112,.38),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #3c2719,
+            #0c0907 75%
+        );
+    transition:
+        transform .8s cubic-bezier(.2,.8,.2,1),
+        opacity .5s ease;
+}
+
+.memory-card:hover .memory-image{
+    opacity:.58;
+    transform:scale(1.08);
+}
+
+.memory-card:nth-child(2) .memory-image{
+    background:
+        radial-gradient(
+            circle at 30% 25%,
+            rgba(205,182,141,.35),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            #493b2e,
+            #0b0908 75%
+        );
+}
+
+.memory-card:nth-child(3) .memory-image{
+    background:
+        radial-gradient(
+            circle at 70% 20%,
+            rgba(172,118,64,.35),
+            transparent 30%
+        ),
+        linear-gradient(
+            135deg,
+            #302116,
+            #090706 75%
+        );
+}
+
+.memory-card::after{
+    content:"";
+    position:absolute;
+    inset:12px;
+    border:1px solid rgba(232,216,188,.1);
+    pointer-events:none;
+}
+
+.memory-content{
+    position:absolute;
+    inset:auto 30px 30px;
+    z-index:2;
+}
+
+.memory-year{
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+.memory-name{
+    margin:12px 0;
+    font-family:"Cormorant Garamond",serif;
+    font-size:48px;
+    font-weight:500;
+}
+
+.memory-desc{
+    max-width:290px;
+    color:#b9ada0;
+    font-size:12px;
+    line-height:1.8;
+}
+
+
+/* =========================================
+   QUOTE SECTION
+========================================= */
+
+.quote-section{
+    position:relative;
+    min-height:90vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:100px 5vw;
+    text-align:center;
+}
+
+.quote-content{
+    width:min(1050px,100%);
+}
+
+.quote-mark{
+    margin-bottom:25px;
+    color:var(--gold);
+    font-family:"Cormorant Garamond",serif;
+    font-size:120px;
+    line-height:.4;
+}
+
+.quote-text{
+    font-family:"Cormorant Garamond",serif;
+    font-size:clamp(45px,7vw,100px);
+    font-weight:500;
+    line-height:.95;
+}
+
+.quote-text em{
+    color:var(--gold-light);
+}
+
+.quote-author{
+    margin-top:35px;
+    color:var(--muted);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:3px;
+}
+
+
+/* =========================================
+   FUTURE SECTION
+========================================= */
+
+.future{
+    position:relative;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    padding:130px 8vw;
+}
+
+.future-box{
+    position:relative;
+    width:100%;
+    max-width:1400px;
+    min-height:650px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:auto;
+    overflow:hidden;
+    border:1px solid var(--line);
+    background:
+        radial-gradient(
+            circle at 50% 45%,
+            rgba(184,132,73,.15),
+            transparent 30%
+        ),
+        rgba(255,255,255,.015);
+}
+
+.future-box::before{
+    content:"";
+    position:absolute;
+    width:700px;
+    height:700px;
+    border:1px solid rgba(215,173,108,.1);
+    border-radius:50%;
+}
+
+.future-content{
+    position:relative;
+    z-index:2;
+    max-width:850px;
+    padding:60px 25px;
+    text-align:center;
+}
+
+.future-kicker{
+    color:var(--gold);
+    font-family:"DM Mono",monospace;
+    font-size:10px;
+    letter-spacing:4px;
+}
+
+.future-title{
+    margin-top:25px;
+    font-family:"Cormorant Garamond",serif;
+    font-size:clamp(70px,11vw,160px);
+    font-weight:500;
+    line-height:.75;
+}
+
+.future-title em{
+    display:block;
+    color:var(--gold-light);
+}
+
+.future-text{
+    max-width:520px;
+    margin:38px auto 0;
+    color:var(--muted);
+    font-size:13px;
+    line-height:1.9;
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.footer{
+    position:relative;
+    z-index:5;
+    padding:45px 5vw;
+    border-top:1px solid var(--line);
+}
+
+.footer-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:25px;
+    max-width:1400px;
+    margin:auto;
+}
+
+.footer-copy,
+.footer-note{
+    color:#71685f;
+    font-family:"DM Mono",monospace;
+    font-size:9px;
+    letter-spacing:2px;
+}
+
+
+/* =========================================
+   REVEAL DEFAULT STATES
+========================================= */
+
+.reveal-up{
+    opacity:0;
+    transform:translateY(70px);
+}
+
+.reveal-left{
+    opacity:0;
+    transform:translateX(-70px);
+}
+
+.reveal-right{
+    opacity:0;
+    transform:translateX(70px);
+}
+
+.scale-in{
+    opacity:0;
+    transform:scale(.92);
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media(max-width:900px){
+
+    .nav-links{
+        display:none;
+    }
+
+    #menuToggle{
+        display:block;
+    }
+
+    .chapter-intro-grid{
+        grid-template-columns:1fr;
+        gap:45px;
+    }
+
+    .memory-header{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+    .memory-grid{
+        grid-template-columns:1fr;
+    }
+
+    .memory-card,
+    .memory-card:nth-child(2),
+    .memory-card:nth-child(3){
+        min-height:430px;
+        transform:none;
+    }
+
+}
+
+@media(max-width:600px){
+
+    #navbar{
+        padding:16px 20px;
+    }
+
+    .hero{
+        padding-left:20px;
+        padding-right:20px;
+    }
+
+    .hero-frame{
+        inset:12px;
+    }
+
+    .hero-title{
+        letter-spacing:-2px;
+    }
+
+    .hero-actions{
+        flex-direction:column;
+    }
+
+    .hero-button{
+        width:min(250px,100%);
+    }
+
+    .chapter-intro,
+    .future{
+        padding-left:25px;
+        padding-right:25px;
+    }
+
+    .memories{
+        padding-left:20px;
+        padding-right:20px;
+    }
+
+    .future-box{
+        min-height:560px;
+    }
+
+    .footer-inner{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+
+}
+
+  /* =========================================
+   PART 8 - GALLERY & CINEMATIC SECTIONS
+========================================= */
+
+.gallery-section,
+.quote-section,
+.future-section,
+.ending-section {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.gallery-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 140px 8%;
+}
+
+.gallery-content {
+    position: relative;
+    z-index: 3;
+    width: min(760px, 100%);
+    text-align: center;
+}
+
+.section-kicker {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: #d8ad67;
+    font-size: 11px;
+    letter-spacing: 5px;
+    margin-bottom: 28px;
+}
+
+.kicker-line {
+    width: 45px;
+    height: 1px;
+    background: rgba(232,189,114,.5);
+}
+
+.gallery-title {
+    margin: 0;
+    font-size: clamp(42px,7vw,110px);
+    line-height: .95;
+    letter-spacing: -4px;
+    font-weight: 700;
+}
+
+.gallery-title span {
+    display: block;
+    margin-top: 12px;
+    color: #d9b36e;
+}
+
+.gallery-description {
+    max-width: 590px;
+    margin: 35px auto 0;
+    color: rgba(255,255,255,.58);
+    line-height: 1.9;
+}
+
+.gallery-scroll-hint {
+    margin-top: 55px;
+    color: #d9b36e;
+    font-size: 10px;
+    letter-spacing: 4px;
+}
+
+.scroll-wheel {
+    width: 25px;
+    height: 42px;
+    border: 1px solid rgba(232,189,114,.55);
+    border-radius: 20px;
+    margin: 18px auto 0;
+    position: relative;
+}
+
+.scroll-wheel i {
+    position: absolute;
+    width: 4px;
+    height: 8px;
+    border-radius: 5px;
+    background: #e8bd72;
+    left: 50%;
+    top: 7px;
+    transform: translateX(-50%);
+    animation: wheelMove 1.5s infinite;
+}
+
+@keyframes wheelMove {
+    0% { transform: translate(-50%,0); opacity: 1; }
+    100% { transform: translate(-50%,17px); opacity: 0; }
+}
+
+.section-glow {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    filter: blur(120px);
+    opacity: .13;
+    pointer-events: none;
+}
+
+.glow-left {
+    left: -250px;
+    top: 15%;
+    background: #d89c48;
+}
+
+.glow-right {
+    right: -250px;
+    bottom: 5%;
+    background: #708cff;
+}
+
+.gallery-side-text {
+    position: absolute;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    color: rgba(255,255,255,.18);
+    font-size: 9px;
+    letter-spacing: 4px;
+}
+
+.gallery-left-text {
+    left: 5%;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+}
+
+.gallery-right-text {
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%) rotate(90deg);
+}
+
+
+/* QUOTE */
+
+.quote-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 140px 8%;
+    background: radial-gradient(
+        circle at center,
+        rgba(119,76,36,.12),
+        transparent 55%
+    );
+}
+
+.quote-content {
+    position: relative;
+    z-index: 2;
+    max-width: 1050px;
+    text-align: center;
+}
+
+.quote-number {
+    color: #d9b36e;
+    letter-spacing: 5px;
+    font-size: 10px;
+}
+
+.quote-mark {
+    font-size: 180px;
+    height: 120px;
+    color: rgba(232,189,114,.45);
+    line-height: 1;
+}
+
+.cinematic-quote {
+    margin: 0;
+    font-size: clamp(42px,7vw,105px);
+    line-height: 1;
+    letter-spacing: -4px;
+}
+
+.cinematic-quote span {
+    color: #d9b36e;
+}
+
+.quote-text {
+    max-width: 620px;
+    margin: 35px auto;
+    color: rgba(255,255,255,.55);
+    line-height: 1.9;
+}
+
+.quote-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 18px;
+    font-size: 9px;
+    letter-spacing: 4px;
+    color: rgba(232,189,114,.75);
+}
+
+.quote-line-small {
+    width: 50px;
+    height: 1px;
+    background: rgba(232,189,114,.4);
+}
+
+
+/* FUTURE */
+
+.future-section {
+    display: flex;
+    align-items: center;
+    padding: 140px 10%;
+}
+
+.future-content {
+    position: relative;
+    z-index: 3;
+    max-width: 850px;
+}
+
+.future-bg-text {
+    position: absolute;
+    font-size: clamp(130px,28vw,500px);
+    font-weight: 800;
+    letter-spacing: -20px;
+    color: rgba(255,255,255,.018);
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+.future-grid {
+    position: absolute;
+    inset: 0;
+    opacity: .07;
+    background-image:
+        linear-gradient(rgba(255,255,255,.35) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.35) 1px,transparent 1px);
+    background-size: 80px 80px;
+    mask-image: linear-gradient(
+        to bottom,
+        transparent,
+        black 25%,
+        black 75%,
+        transparent
+    );
+}
+
+.future-top {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+}
+
+.future-eyebrow {
+    color: #d9b36e;
+    font-size: 10px;
+    letter-spacing: 5px;
+}
+
+.future-index {
+    color: rgba(255,255,255,.25);
+    font-size: 13px;
+}
+
+.future-title {
+    margin: 0;
+    font-size: clamp(55px,10vw,155px);
+    line-height: .84;
+    letter-spacing: -7px;
+}
+
+.future-title span {
+    color: #d9b36e;
+}
+
+.future-description {
+    max-width: 560px;
+    margin: 42px 0;
+    color: rgba(255,255,255,.55);
+    line-height: 1.9;
+}
+
+.future-actions {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    flex-wrap: wrap;
+}
+
+.future-button,
+.back-to-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 20px;
+    padding: 17px 24px;
+    border: 1px solid rgba(232,189,114,.55);
+    color: #f3d79d;
+    text-decoration: none;
+    font-size: 10px;
+    letter-spacing: 3px;
+    transition: .4s;
+}
+
+.future-button:hover,
+.back-to-top:hover {
+    background: #e8bd72;
+    color: #111;
+    box-shadow: 0 0 40px rgba(232,189,114,.3);
+}
+
+.future-button i {
+    font-style: normal;
+    font-size: 18px;
+}
+
+.future-play {
+    border: 0;
+    background: transparent;
+    color: rgba(255,255,255,.7);
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    font-size: 9px;
+    letter-spacing: 3px;
+    cursor: pointer;
+}
+
+.play-circle {
+    width: 42px;
+    height: 42px;
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: #d9b36e;
+}
+
+.future-status {
+    position: absolute;
+    right: 8%;
+    bottom: 10%;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+.future-status div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.future-status span {
+    color: rgba(255,255,255,.35);
+}
+
+.future-status strong {
+    color: #d9b36e;
+    font-weight: 400;
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    background: #d9b36e;
+    border-radius: 50%;
+    box-shadow: 0 0 15px #d9b36e;
+    animation: statusPulse 1.5s infinite;
+}
+
+@keyframes statusPulse {
+    50% {
+        transform: scale(1.8);
+        opacity: .3;
+    }
+}
+
+
+/* ENDING */
+
+.ending-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    min-height: 100vh;
+}
+
+.ending-content {
+    position: relative;
+    z-index: 2;
+    padding: 60px 20px;
+}
+
+.ending-small {
+    color: #d9b36e;
+    font-size: 10px;
+    letter-spacing: 5px;
+}
+
+.ending-title {
+    margin: 35px 0 0;
+    font-size: clamp(52px,9vw,140px);
+    line-height: .85;
+    letter-spacing: -5px;
+}
+
+.ending-title span {
+    display: block;
+    color: #d9b36e;
+}
+
+.ending-symbol {
+    margin: 35px 0;
+    font-size: 100px;
+    color: #e8bd72;
+    text-shadow: 0 0 50px rgba(232,189,114,.3);
+}
+
+.ending-description {
+    color: rgba(255,255,255,.5);
+    margin-bottom: 35px;
+}
+
+
+/* FOOTER */
+
+.cinematic-footer {
+    position: relative;
+    z-index: 5;
+    padding: 70px 8% 30px;
+    border-top: 1px solid rgba(255,255,255,.08);
+    background: rgba(0,0,0,.45);
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+
+.footer-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    color: #fff;
+    text-decoration: none;
+    letter-spacing: 4px;
+}
+
+.logo-icon {
+    width: 38px;
+    height: 38px;
+    border: 1px solid #d9b36e;
+    display: grid;
+    place-items: center;
+    color: #d9b36e;
+}
+
+.logo-text {
+    font-size: 16px;
+}
+
+.footer-brand p {
+    max-width: 260px;
+    margin-top: 20px;
+    color: rgba(255,255,255,.35);
+    font-size: 10px;
+    line-height: 1.8;
+    letter-spacing: 2px;
+}
+
+.footer-nav {
+    display: flex;
+    gap: 70px;
+}
+
+.footer-column {
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+}
+
+.footer-label {
+    color: #d9b36e;
+    font-size: 9px;
+    letter-spacing: 4px;
+    margin-bottom: 8px;
+}
+
+.footer-column a {
+    color: rgba(255,255,255,.48);
+    text-decoration: none;
+    font-size: 13px;
+    transition: .3s;
+}
+
+.footer-column a:hover {
+    color: #e8bd72;
+    transform: translateX(5px);
+}
+
+.footer-divider {
+    height: 1px;
+    margin: 55px 0 25px;
+    background: rgba(255,255,255,.08);
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    flex-wrap: wrap;
+    color: rgba(255,255,255,.25);
+    font-size: 9px;
+    letter-spacing: 2px;
+}
+
+
+/* RESPONSIVE */
+
+@media (max-width:768px) {
+
+    .gallery-section,
+    .quote-section,
+    .future-section {
+        padding-left: 25px;
+        padding-right: 25px;
+    }
+
+    .gallery-side-text {
+        display: none;
+    }
+
+    .future-title {
+        letter-spacing: -3px;
+    }
+
+    .future-status {
+        left: 25px;
+        right: auto;
+        bottom: 35px;
+    }
+
+    .footer-nav {
+        gap: 40px;
+    }
+
+    .footer-bottom {
+        flex-direction: column;
+        line-height: 1.8;
+    }
+
+}
+  
+</style>
+</head>
+
+<body class="loading">
+
+<div id="loader">
+    <div class="loader-content">
+
+        <div class="loader-book">
+            <div class="loader-spine"></div>
+        </div>
+
+        <div class="loader-kicker">
+            OPENING THE STORY
+        </div>
+
+        <h1 class="loader-title">
+            A life in chapters.
+        </h1>
+
+        <div class="loader-track">
+            <div id="loaderProgress"></div>
+        </div>
+
+        <div class="loader-bottom">
+            <span>PREPARING MEMORIES</span>
+            <span id="loaderPercent">0%</span>
+        </div>
+
+    </div>
+</div>
+
+
+<div id="webgl-container"></div>
+
+<div class="noise"></div>
+
+
+<nav id="navbar">
+
+    <div class="nav-inner">
+
+        <a href="#home" class="logo">
+
+            <div class="logo-mark">
+                A
+            </div>
+
+            <div class="logo-text">
+                AETERNUM
+            </div>
+
+        </a>
+
+
+        <div class="nav-links">
+
+            <a href="#home">BEGINNING</a>
+
+            <a href="#chapters">CHAPTERS</a>
+
+            <a href="#memories">MEMORIES</a>
+
+            <a href="#future">FUTURE</a>
+
+            <a href="#future" class="nav-cta">
+                OPEN BOOK
+            </a>
+
+        </div>
+
+
+        <button id="menuToggle" aria-label="Mở menu">
+            ☰
+        </button>
+
+    </div>
+
+</nav>
+
+
+<main>
+
+<!-- =========================================
+     HERO
+========================================= -->
+
+<section class="hero" id="home">
+
+    <div class="hero-frame"></div>
+
+    <div class="hero-content">
+
+        <div class="hero-kicker">
+            EVERY LIFE HAS A STORY
+        </div>
+
+        <h1 class="hero-title">
+
+            <span class="line">
+                THIS IS
+            </span>
+
+            <span class="line">
+                <em>MY STORY.</em>
+            </span>
+
+        </h1>
+
+        <p class="hero-subtitle">
+            Một hành trình được kể bằng những chương,
+            những khoảnh khắc và những ký ức không bao giờ
+            thật sự biến mất.
+        </p>
+
+        <div class="hero-actions">
+
+            <a href="#chapters" class="hero-button">
+                BẮT ĐẦU HÀNH TRÌNH
+            </a>
+
+            <a href="#memories" class="hero-button secondary">
+                XEM KÝ ỨC ↓
+            </a>
+
+        </div>
+
+    </div>
+
+    <div class="scroll-indicator">
+
+        <span>SCROLL TO TURN THE PAGE</span>
+
+        <div class="scroll-line">
+            <span></span>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     CHAPTER 01
+========================================= -->
+
+<section
+    class="chapter-intro"
+    id="chapters"
+>
+
+    <div class="chapter-intro-grid">
+
+        <div class="reveal-left">
+
+            <div class="chapter-index">
+                CHAPTER 01 / THE BEGINNING
+            </div>
+
+            <div class="chapter-line"></div>
+
+            <p class="chapter-small">
+                Mọi câu chuyện đều bắt đầu bằng một trang giấy
+                trắng. Chúng ta chưa biết điều gì đang chờ phía
+                trước, nhưng vẫn bước đi.
+            </p>
+
+        </div>
+
+
+        <div class="reveal-right">
+
+            <h2 class="chapter-heading">
+                Tất cả bắt đầu
+                <span>từ một ngày.</span>
+            </h2>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     MEMORIES
+========================================= -->
+
+<section
+    class="memories"
+    id="memories"
+>
+
+    <div class="memory-header reveal-up">
+
+        <div>
+
+            <div class="section-label">
+                SELECTED MEMORIES / 001 — 003
+            </div>
+
+            <h2 class="section-title">
+                Những trang<br>
+                không muốn quên.
+            </h2>
+
+        </div>
+
+        <p class="section-text">
+            Mỗi ký ức là một chương nhỏ.
+            Có những điều đã qua, nhưng chỉ cần mở lại
+            đúng trang, tất cả dường như vẫn còn ở đó.
+        </p>
+
+    </div>
+
+
+    <div class="memory-grid">
+
+        <article class="memory-card reveal-up">
+
+            <div class="memory-image"></div>
+
+            <div class="memory-content">
+
+                <div class="memory-year">
+                    MEMORY / 01
+                </div>
+
+                <h3 class="memory-name">
+                    The First Page
+                </h3>
+
+                <p class="memory-desc">
+                    Nơi câu chuyện bắt đầu.
+                    Một thời điểm bình thường,
+                    nhưng sau này trở thành điều không thể quên.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="memory-card reveal-up">
+
+            <div class="memory-image"></div>
+
+            <div class="memory-content">
+
+                <div class="memory-year">
+                    MEMORY / 02
+                </div>
+
+                <h3 class="memory-name">
+                    Between Days
+                </h3>
+
+                <p class="memory-desc">
+                    Những ngày tháng trôi qua rất nhanh.
+                    Chỉ đến khi nhìn lại, ta mới nhận ra
+                    mình đã đi được xa đến thế nào.
+                </p>
+
+            </div>
+
+        </article>
+
+
+        <article class="memory-card reveal-up">
+
+            <div class="memory-image"></div>
+
+            <div class="memory-content">
+
+                <div class="memory-year">
+                    MEMORY / 03
+                </div>
+
+                <h3 class="memory-name">
+                    Still Here
+                </h3>
+
+                <p class="memory-desc">
+                    Có những người, những nơi và những cảm xúc
+                    dù thời gian thay đổi,
+                    vẫn ở lại đâu đó trong câu chuyện của chúng ta.
+                </p>
+
+            </div>
+
+        </article>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     QUOTE
+========================================= -->
+
+<section class="quote-section">
+
+    <div class="quote-content scale-in">
+
+        <div class="quote-mark">
+            “
+        </div>
+
+        <h2 class="quote-text">
+            Chúng ta không thể quay lại
+            <em>trang cũ,</em>
+            nhưng luôn có thể viết tiếp
+            <em>trang mới.</em>
+        </h2>
+
+        <div class="quote-author">
+            — AETERNUM ARCHIVES
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     FUTURE
+========================================= -->
+
+<section
+    class="future"
+    id="future"
+>
+
+    <div class="future-box">
+
+        <div class="future-content scale-in">
+
+            <div class="future-kicker">
+                CHAPTER ∞ / STILL UNWRITTEN
+            </div>
+
+            <h2 class="future-title">
+                THE NEXT
+                <em>PAGE.</em>
+            </h2>
+
+            <p class="future-text">
+                Cuốn sách vẫn chưa kết thúc.
+                Có thể chương đẹp nhất vẫn chưa được viết,
+                và hành trình phía trước mới chỉ thật sự bắt đầu.
+            </p>
+
+        </div>
+
+    </div>
+
+</section>
+
+  <!-- =========================================
+     PART 8 - GALLERY + FINAL CHAPTER HTML
+========================================= -->
+
+<section id="gallery" class="gallery-section">
+    <div class="section-glow glow-left"></div>
+    <div class="section-glow glow-right"></div>
+
+    <div class="gallery-content">
+        <div class="section-kicker reveal-up">
+            <span class="kicker-line"></span>
+            <span>CHAPTER FOUR</span>
+            <span class="kicker-line"></span>
+        </div>
+
+        <h2 class="gallery-title reveal-up">
+            Những Khoảnh Khắc
+            <span>Không Bao Giờ Biến Mất</span>
+        </h2>
+
+        <p class="gallery-description reveal-up">
+            Mỗi ký ức là một mảnh ghép của hành trình.
+            Hãy lướt xuống và bước vào không gian nơi
+            thời gian, ánh sáng và cảm xúc hòa làm một.
+        </p>
+
+        <div class="gallery-scroll-hint reveal-up">
+            <span>KÉO XUỐNG ĐỂ XOAY THẾ GIỚI</span>
+            <div class="scroll-wheel">
+                <i></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="gallery-side-text gallery-left-text">
+        <span>MEMORY</span>
+        <span>ARCHIVE</span>
+        <span>001—009</span>
+    </div>
+
+    <div class="gallery-side-text gallery-right-text">
+        <span>BEYOND</span>
+        <span>THE</span>
+        <span>STARS</span>
+    </div>
+</section>
+
+
+<!-- =========================================
+     QUOTE CINEMATIC SECTION
+========================================= -->
+
+<section class="quote-section" id="quote">
+
+    <div class="quote-background">
+        <div class="quote-noise"></div>
+        <div class="quote-line quote-line-1"></div>
+        <div class="quote-line quote-line-2"></div>
+        <div class="quote-line quote-line-3"></div>
+    </div>
+
+    <div class="quote-content">
+
+        <span class="quote-number reveal-left">
+            05 / THE STORY CONTINUES
+        </span>
+
+        <div class="quote-mark reveal-up">“</div>
+
+        <h2 class="cinematic-quote reveal-up">
+            Có những hành trình
+            <br>
+            không được đo bằng
+            <span>khoảng cách.</span>
+        </h2>
+
+        <p class="quote-text reveal-up">
+            Mà được đo bằng những điều ta đã trải qua,
+            những người ta từng gặp và những ký ức
+            vẫn còn ở lại dù thời gian đã trôi rất xa.
+        </p>
+
+        <div class="quote-bottom reveal-up">
+            <div class="quote-line-small"></div>
+            <span>KEEP MOVING FORWARD</span>
+            <div class="quote-line-small"></div>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     FUTURE SECTION
+========================================= -->
+
+<section id="future" class="future-section">
+
+    <div class="future-bg-text">
+        FUTURE
+    </div>
+
+    <div class="future-grid"></div>
+
+    <div class="future-content">
+
+        <div class="future-top reveal-up">
+            <span class="future-eyebrow">
+                THE FINAL CHAPTER
+            </span>
+
+            <span class="future-index">
+                06
+            </span>
+        </div>
+
+        <h2 class="future-title reveal-up">
+            CÂU CHUYỆN
+            <br>
+            <span>CHƯA KẾT THÚC.</span>
+        </h2>
+
+        <p class="future-description reveal-up">
+            Khi cuốn sách khép lại, một hành trình mới
+            lại bắt đầu. Không có kết thúc thực sự,
+            chỉ có những cánh cửa đang chờ được mở ra.
+        </p>
+
+        <div class="future-actions reveal-up">
+
+            <a
+                href="#hero"
+                class="future-button magnetic"
+            >
+                <span>BẮT ĐẦU LẠI</span>
+                <i>↗</i>
+            </a>
+
+            <button
+                class="future-play"
+                type="button"
+            >
+                <span class="play-circle">
+                    ▶
+                </span>
+
+                <span>
+                    REPLAY EXPERIENCE
+                </span>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div class="future-status reveal-right">
+
+        <div class="status-dot"></div>
+
+        <div>
+            <span>STATUS</span>
+            <strong>THE STORY LIVES ON</strong>
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     ENDING / FINAL MESSAGE
+========================================= -->
+
+<section class="ending-section">
+
+    <div class="ending-stars"></div>
+
+    <div class="ending-content">
+
+        <span class="ending-small reveal-up">
+            THANK YOU FOR EXPLORING
+        </span>
+
+        <h2 class="ending-title reveal-up">
+            SEE YOU
+            <span>IN THE NEXT CHAPTER.</span>
+        </h2>
+
+        <div class="ending-symbol reveal-up">
+            ∞
+        </div>
+
+        <p class="ending-description reveal-up">
+            Mọi kết thúc đều là điểm bắt đầu
+            của một điều gì đó mới.
+        </p>
+
+        <a
+            href="#hero"
+            class="back-to-top magnetic reveal-up"
+        >
+            <span>BACK TO THE BEGINNING</span>
+            <span class="back-arrow">↑</span>
+        </a>
+
+    </div>
+
+</section>
+
+
+<!-- =========================================
+     CINEMATIC FOOTER
+========================================= -->
+
+<footer class="cinematic-footer">
+
+    <div class="footer-top">
+
+        <div class="footer-brand">
+
+            <a
+                href="#hero"
+                class="footer-logo"
+            >
+                <span class="logo-icon">
+                    H
+                </span>
+
+                <span class="logo-text">
+                    HORIZON
+                </span>
+            </a>
+
+            <p>
+                A THREE DIMENSIONAL
+                DIGITAL EXPERIENCE.
+            </p>
+
+        </div>
+
+
+        <div class="footer-nav">
+
+            <div class="footer-column">
+
+                <span class="footer-label">
+                    EXPLORE
+                </span>
+
+                <a href="#hero">
+                    Beginning
+                </a>
+
+                <a href="#chapter-1">
+                    Chapter One
+                </a>
+
+                <a href="#memories">
+                    Memories
+                </a>
+
+                <a href="#gallery">
+                    Gallery
+                </a>
+
+            </div>
+
+
+            <div class="footer-column">
+
+                <span class="footer-label">
+                    JOURNEY
+                </span>
+
+                <a href="#quote">
+                    Philosophy
+                </a>
+
+                <a href="#future">
+                    Future
+                </a>
+
+                <a href="#hero">
+                    Replay
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <div class="footer-divider"></div>
+
+
+    <div class="footer-bottom">
+
+        <span>
+            © 2026 HORIZON EXPERIENCE
+        </span>
+
+        <span>
+            DESIGNED IN THREE DIMENSIONS
+        </span>
+
+        <span>
+            SCROLL TO EXPLORE
+        </span>
+
+    </div>
+
+</footer>
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="footer-inner">
+
+        <div class="footer-copy">
+            © 2026 AETERNUM — A LIFE IN CHAPTERS
+        </div>
+
+        <div class="footer-note">
+            KEEP WRITING YOUR STORY.
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- =========================================
+     LIBRARIES
+========================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.1/build/three.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+
+<script>
+
+/* =========================================
+   PART 2 SẼ DÁN LIỀN NGAY DƯỚI ĐÂY
+========================================= */
+
+/* =========================================
+   PART 2 - THREE.JS 3D BOOK
+========================================= */
+
+gsap.registerPlugin(ScrollTrigger);
+
+
+/* =========================================
+   SCENE SETUP
+========================================= */
+
+const container =
+    document.getElementById("webgl-container");
+
+const scene =
+    new THREE.Scene();
+
+scene.fog =
+    new THREE.FogExp2(
+        0x090706,
+        0.045
+    );
+
+
+/* =========================================
+   CAMERA
+========================================= */
+
+const camera =
+    new THREE.PerspectiveCamera(
+        40,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        100
+    );
+
+camera.position.set(
+    0,
+    0.2,
+    11
+);
+
+scene.add(camera);
+
+
+/* =========================================
+   RENDERER
+========================================= */
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias:true,
+        alpha:true
+    });
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(
+        window.devicePixelRatio,
+        2
+    )
+);
+
+renderer.setClearColor(
+    0x000000,
+    0
+);
+
+renderer.outputColorSpace =
+    THREE.SRGBColorSpace;
+
+renderer.toneMapping =
+    THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure =
+    1.25;
+
+container.appendChild(
+    renderer.domElement
+);
+
+
+/* =========================================
+   CLOCK
+========================================= */
+
+const clock =
+    new THREE.Clock();
+
+
+/* =========================================
+   MAIN BOOK GROUP
+========================================= */
+
+const book =
+    new THREE.Group();
+
+scene.add(book);
+
+book.position.set(
+    0,
+    0.1,
+    0
+);
+
+book.rotation.set(
+    -0.15,
+    0,
+    0.08
+);
+
+
+/* =========================================
+   MATERIALS
+========================================= */
+
+const coverMaterial =
+    new THREE.MeshStandardMaterial({
+        color:0x3b170d,
+        roughness:0.48,
+        metalness:0.18
+    });
+
+const coverEdgeMaterial =
+    new THREE.MeshStandardMaterial({
+        color:0x7c4824,
+        roughness:0.38,
+        metalness:0.25
+    });
+
+const paperMaterial =
+    new THREE.MeshStandardMaterial({
+        color:0xe5d1ab,
+        roughness:0.82,
+        metalness:0.02
+    });
+
+const paperDarkMaterial =
+    new THREE.MeshStandardMaterial({
+        color:0xb99b6c,
+        roughness:0.88,
+        metalness:0.02
+    });
+
+const goldMaterial =
+    new THREE.MeshStandardMaterial({
+        color:0xd8a957,
+        emissive:0x4d2a09,
+        emissiveIntensity:0.35,
+        roughness:0.28,
+        metalness:0.8
+    });
+
+
+/* =========================================
+   BOOK DIMENSIONS
+========================================= */
+
+const BOOK_WIDTH = 6.8;
+const BOOK_HEIGHT = 4.5;
+const BOOK_DEPTH = 0.75;
+
+const HALF_WIDTH =
+    BOOK_WIDTH / 2;
+
+
+/* =========================================
+   BOOK SPINE
+========================================= */
+
+const spineGeometry =
+    new THREE.BoxGeometry(
+        0.42,
+        BOOK_HEIGHT,
+        BOOK_DEPTH + 0.18
+    );
+
+const spine =
+    new THREE.Mesh(
+        spineGeometry,
+        coverMaterial
+    );
+
+spine.position.set(
+    0,
+    0,
+    0
+);
+
+book.add(spine);
+
+
+/* =========================================
+   SPINE GOLD LINES
+========================================= */
+
+for (
+    let i = -1;
+    i <= 1;
+    i++
+) {
+
+    const lineGeometry =
+        new THREE.BoxGeometry(
+            0.44,
+            0.025,
+            BOOK_DEPTH + 0.2
+        );
+
+    const line =
+        new THREE.Mesh(
+            lineGeometry,
+            goldMaterial
+        );
+
+    line.position.set(
+        0,
+        i * 1.25,
+        BOOK_DEPTH / 2 + 0.02
+    );
+
+    spine.add(line);
+
+}
+
+
+/* =========================================
+   FRONT COVER PIVOT
+========================================= */
+
+const frontCoverPivot =
+    new THREE.Group();
+
+frontCoverPivot.position.set(
+    0.2,
+    0,
+    0
+);
+
+book.add(frontCoverPivot);
+
+
+const frontCoverGeometry =
+    new THREE.BoxGeometry(
+        HALF_WIDTH,
+        BOOK_HEIGHT + 0.12,
+        0.14
+    );
+
+const frontCover =
+    new THREE.Mesh(
+        frontCoverGeometry,
+        coverMaterial
+    );
+
+frontCover.position.set(
+    HALF_WIDTH / 2,
+    0,
+    0.35
+);
+
+frontCoverPivot.add(
+    frontCover
+);
+
+
+/* =========================================
+   FRONT COVER INNER LAYER
+========================================= */
+
+const frontCoverInner =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            HALF_WIDTH - 0.15,
+            BOOK_HEIGHT - 0.18,
+            0.025
+        ),
+        coverEdgeMaterial
+    );
+
+frontCoverInner.position.set(
+    HALF_WIDTH / 2,
+    0,
+    0.43
+);
+
+frontCoverPivot.add(
+    frontCoverInner
+);
+
+
+/* =========================================
+   BACK COVER PIVOT
+========================================= */
+
+const backCoverPivot =
+    new THREE.Group();
+
+backCoverPivot.position.set(
+    -0.2,
+    0,
+    0
+);
+
+book.add(backCoverPivot);
+
+
+const backCover =
+    new THREE.Mesh(
+        frontCoverGeometry,
+        coverMaterial
+    );
+
+backCover.position.set(
+    -HALF_WIDTH / 2,
+    0,
+    0.35
+);
+
+backCoverPivot.add(
+    backCover
+);
+
+
+const backCoverInner =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            HALF_WIDTH - 0.15,
+            BOOK_HEIGHT - 0.18,
+            0.025
+        ),
+        coverEdgeMaterial
+    );
+
+backCoverInner.position.set(
+    -HALF_WIDTH / 2,
+    0,
+    0.43
+);
+
+backCoverPivot.add(
+    backCoverInner
+);
+
+
+/* =========================================
+   BOOK PAGES
+========================================= */
+
+const pages =
+    new THREE.Group();
+
+book.add(pages);
+
+
+const pageCount = 28;
+
+for (
+    let i = 0;
+    i < pageCount;
+    i++
+) {
+
+    const pageThickness =
+        0.014;
+
+    const pageGeometry =
+        new THREE.BoxGeometry(
+            BOOK_WIDTH - 0.7,
+            BOOK_HEIGHT - 0.28,
+            pageThickness
+        );
+
+    const material =
+        i % 5 === 0
+            ? paperDarkMaterial
+            : paperMaterial;
+
+    const page =
+        new THREE.Mesh(
+            pageGeometry,
+            material
+        );
+
+    const depthOffset =
+        -BOOK_DEPTH / 2 +
+        0.08 +
+        (
+            i *
+            pageThickness *
+            1.55
+        );
+
+    page.position.set(
+        0,
+        0,
+        depthOffset
+    );
+
+    pages.add(page);
+
+}
+
+
+/* =========================================
+   PAGE EDGES
+========================================= */
+
+const pageBlock =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            BOOK_WIDTH - 0.65,
+            BOOK_HEIGHT - 0.25,
+            0.48
+        ),
+        paperMaterial
+    );
+
+pageBlock.position.set(
+    0,
+    0,
+    0.02
+);
+
+book.add(
+    pageBlock
+);
+
+
+/* =========================================
+   PAGE LINES LEFT + RIGHT
+========================================= */
+
+function createPageLines(
+    offsetX
+) {
+
+    const lineGroup =
+        new THREE.Group();
+
+    const lineMaterial =
+        new THREE.MeshBasicMaterial({
+            color:0x8e704c,
+            transparent:true,
+            opacity:0.18
+        });
+
+    for (
+        let i = 0;
+        i < 12;
+        i++
+    ) {
+
+        const line =
+            new THREE.Mesh(
+                new THREE.PlaneGeometry(
+                    2.15,
+                    0.018
+                ),
+                lineMaterial
+            );
+
+        line.position.set(
+            offsetX,
+            1.35 -
+            i * 0.23,
+            0.29
+        );
+
+        lineGroup.add(line);
+
+    }
+
+    return lineGroup;
+
+}
+
+const leftPageLines =
+    createPageLines(
+        -1.7
+    );
+
+const rightPageLines =
+    createPageLines(
+        1.7
+    );
+
+book.add(leftPageLines);
+book.add(rightPageLines);
+
+
+/* =========================================
+   BOOK TITLE ON COVER
+========================================= */
+
+const coverSymbol =
+    new THREE.Mesh(
+        new THREE.TorusGeometry(
+            0.48,
+            0.018,
+            8,
+            50
+        ),
+        goldMaterial
+    );
+
+coverSymbol.position.set(
+    HALF_WIDTH / 2,
+    0.55,
+    0.46
+);
+
+frontCoverPivot.add(
+    coverSymbol
+);
+
+
+const coverSymbolInner =
+    new THREE.Mesh(
+        new THREE.TorusGeometry(
+            0.23,
+            0.012,
+            8,
+            40
+        ),
+        goldMaterial
+    );
+
+coverSymbolInner.position.set(
+    HALF_WIDTH / 2,
+    0.55,
+    0.47
+);
+
+frontCoverPivot.add(
+    coverSymbolInner
+);
+
+
+/* =========================================
+   COVER DECORATION LINES
+========================================= */
+
+function createCoverBorder(
+    parent,
+    direction
+) {
+
+    const border =
+        new THREE.Group();
+
+    const material =
+        new THREE.MeshBasicMaterial({
+            color:0xd8a957,
+            transparent:true,
+            opacity:0.45
+        });
+
+    const vertical =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                0.012,
+                3.65
+            ),
+            material
+        );
+
+    vertical.position.set(
+        direction *
+        HALF_WIDTH / 2,
+        0,
+        0.49
+    );
+
+    const top =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                2.55,
+                0.012
+            ),
+            material
+        );
+
+    top.position.set(
+        0,
+        1.82,
+        0.49
+    );
+
+    const bottom =
+        top.clone();
+
+    bottom.position.y =
+        -1.82;
+
+    border.add(
+        vertical,
+        top,
+        bottom
+    );
+
+    parent.add(border);
+
+}
+
+createCoverBorder(
+    frontCoverPivot,
+    1
+);
+
+
+/* =========================================
+   INITIAL CLOSED STATE
+========================================= */
+
+frontCoverPivot.rotation.y =
+    -0.08;
+
+backCoverPivot.rotation.y =
+    0.04;
+
+
+/* =========================================
+   FLOATING DUST PARTICLES
+========================================= */
+
+const dustCount = 1200;
+
+const dustPositions =
+    new Float32Array(
+        dustCount * 3
+    );
+
+const dustSizes =
+    new Float32Array(
+        dustCount
+    );
+
+for (
+    let i = 0;
+    i < dustCount;
+    i++
+) {
+
+    const i3 = i * 3;
+
+    dustPositions[i3] =
+        (Math.random() - 0.5) * 18;
+
+    dustPositions[i3 + 1] =
+        (Math.random() - 0.5) * 12;
+
+    dustPositions[i3 + 2] =
+        (Math.random() - 0.5) * 10;
+
+    dustSizes[i] =
+        Math.random();
+
+}
+
+const dustGeometry =
+    new THREE.BufferGeometry();
+
+dustGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+        dustPositions,
+        3
+    )
+);
+
+dustGeometry.setAttribute(
+    "size",
+    new THREE.BufferAttribute(
+        dustSizes,
+        1
+    )
+);
+
+const dustMaterial =
+    new THREE.PointsMaterial({
+        color:0xe8c88e,
+        size:0.025,
+        transparent:true,
+        opacity:0.65,
+        depthWrite:false,
+        blending:
+            THREE.AdditiveBlending
+    });
+
+const dust =
+    new THREE.Points(
+        dustGeometry,
+        dustMaterial
+    );
+
+scene.add(dust);
+
+
+/* =========================================
+   FLOATING PAPER PARTICLES
+========================================= */
+
+const paperParticles =
+    new THREE.Group();
+
+scene.add(paperParticles);
+
+for (
+    let i = 0;
+    i < 18;
+    i++
+) {
+
+    const paper =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                0.3 + Math.random() * 0.3,
+                0.42 + Math.random() * 0.35
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0xe5d1ab,
+                side:THREE.DoubleSide,
+                transparent:true,
+                opacity:0.35
+            })
+        );
+
+    paper.position.set(
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 8,
+        -2 - Math.random() * 6
+    );
+
+    paper.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+    );
+
+    paper.userData = {
+        speed:
+            0.15 +
+            Math.random() * 0.35,
+
+        rotationSpeed:
+            (Math.random() - 0.5) *
+            0.02,
+
+        offset:
+            Math.random() *
+            Math.PI * 2
+    };
+
+    paperParticles.add(paper);
+
+}
+
+
+/* =========================================
+   LIGHTING
+========================================= */
+
+const ambientLight =
+    new THREE.AmbientLight(
+        0x7b5c42,
+        1.6
+    );
+
+scene.add(ambientLight);
+
+
+const warmLight =
+    new THREE.PointLight(
+        0xffc06a,
+        40,
+        30,
+        2
+    );
+
+warmLight.position.set(
+    -4,
+    5,
+    7
+);
+
+scene.add(warmLight);
+
+
+const sideLight =
+    new THREE.PointLight(
+        0xb77942,
+        28,
+        25,
+        2
+    );
+
+sideLight.position.set(
+    5,
+    -2,
+    4
+);
+
+scene.add(sideLight);
+
+
+const rimLight =
+    new THREE.PointLight(
+        0xffdf9e,
+        22,
+        20,
+        2
+    );
+
+rimLight.position.set(
+    0,
+    3,
+    -5
+);
+
+scene.add(rimLight);
+
+
+/* =========================================
+   BOOK GLOW
+========================================= */
+
+const bookGlow =
+    new THREE.PointLight(
+        0xd8a957,
+        0,
+        18,
+        2
+    );
+
+bookGlow.position.set(
+    0,
+    0,
+    3
+);
+
+scene.add(bookGlow);
+
+
+/* =========================================
+   SCROLL STATE
+========================================= */
+
+const storyState = {
+    progress:0,
+    bookOpen:0,
+    chapter:0
+};
+
+
+/* =========================================
+   HERO SCROLL TIMELINE
+========================================= */
+
+const heroTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#home",
+            start:"top top",
+            end:"bottom top",
+            scrub:1.2,
+            pin:true
+        }
+    });
+
+heroTimeline
+    .to(
+        frontCoverPivot.rotation,
+        {
+            y:-1.25,
+            duration:1.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        backCoverPivot.rotation,
+        {
+            y:1.15,
+            duration:1.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.rotation,
+        {
+            x:-0.05,
+            y:0,
+            z:0,
+            duration:1.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.position,
+        {
+            y:-0.7,
+            duration:1.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        camera.position,
+        {
+            z:8.5,
+            y:0.6,
+            duration:1.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        bookGlow,
+        {
+            intensity:10,
+            duration:1.2,
+            ease:"none"
+        },
+        0.35
+    );
+
+
+/* =========================================
+   STORY STATE UPDATE
+========================================= */
+
+ScrollTrigger.create({
+
+    trigger:"body",
+
+    start:"top top",
+
+    end:"bottom bottom",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        storyState.progress =
+            self.progress;
+
+    }
+
+});
+
+
+/* =========================================
+   CHAPTER CAMERA MOVEMENT
+========================================= */
+
+const chapterTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#chapters",
+            start:"top bottom",
+            end:"bottom top",
+            scrub:1
+        }
+    });
+
+chapterTimeline
+    .to(
+        camera.position,
+        {
+            x:-1.8,
+            y:0.5,
+            z:7.8,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.rotation,
+        {
+            y:0.32,
+            x:0.1,
+            z:-0.05,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.position,
+        {
+            x:0.9,
+            y:-0.3,
+            ease:"none"
+        },
+        0
+    );
+
+
+/* =========================================
+   MEMORY SECTION 3D MOVEMENT
+========================================= */
+
+const memoryTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#memories",
+            start:"top bottom",
+            end:"bottom top",
+            scrub:1
+        }
+    });
+
+memoryTimeline
+    .to(
+        camera.position,
+        {
+            x:1.2,
+            y:1.1,
+            z:9.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.rotation,
+        {
+            y:-0.28,
+            x:0.22,
+            z:0.12,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.position,
+        {
+            x:-1.1,
+            y:0.2,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        paperParticles.rotation,
+        {
+            y:Math.PI * 0.8,
+            ease:"none"
+        },
+        0
+    );
+
+
+/* =========================================
+   FUTURE SECTION MOVEMENT
+========================================= */
+
+const futureTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#future",
+            start:"top bottom",
+            end:"bottom top",
+            scrub:1
+        }
+    });
+
+futureTimeline
+    .to(
+        camera.position,
+        {
+            x:0,
+            y:0,
+            z:12,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.position,
+        {
+            x:0,
+            y:0.5,
+            z:-1,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.rotation,
+        {
+            y:Math.PI * 0.5,
+            x:0.3,
+            z:0,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        book.scale,
+        {
+            x:0.7,
+            y:0.7,
+            z:0.7,
+            ease:"none"
+        },
+        0
+    );
+
+  /* =========================================
+   PART 3 - ANIMATION ENGINE
+   BOOK PAGE TURN + CINEMATIC MOTION
+========================================= */
+
+
+/* =========================================
+   MOUSE STATE
+========================================= */
+
+const mouse = {
+    x:0,
+    y:0,
+    targetX:0,
+    targetY:0
+};
+
+window.addEventListener(
+    "mousemove",
+    (event) => {
+
+        mouse.targetX =
+            (
+                event.clientX /
+                window.innerWidth
+            ) * 2 - 1;
+
+        mouse.targetY =
+            -(
+                event.clientY /
+                window.innerHeight
+            ) * 2 + 1;
+
+    },
+    { passive:true }
+);
+
+
+/* =========================================
+   SMOOTH MOUSE FOLLOW
+========================================= */
+
+function updateMouseMotion() {
+
+    mouse.x +=
+        (
+            mouse.targetX -
+            mouse.x
+        ) * 0.035;
+
+    mouse.y +=
+        (
+            mouse.targetY -
+            mouse.y
+        ) * 0.035;
+
+}
+
+
+/* =========================================
+   STORE ORIGINAL BOOK POSITION
+========================================= */
+
+const baseBookPosition =
+    new THREE.Vector3();
+
+const baseBookRotation =
+    new THREE.Euler();
+
+const baseCameraPosition =
+    new THREE.Vector3();
+
+
+/* =========================================
+   PAGE TURN GROUPS
+========================================= */
+
+const turningPages =
+    [];
+
+const pageTurnCount = 10;
+
+for (
+    let i = 0;
+    i < pageTurnCount;
+    i++
+) {
+
+    const pivot =
+        new THREE.Group();
+
+    pivot.position.set(
+        0,
+        0,
+        0.31 -
+        i * 0.035
+    );
+
+    const pageWidth =
+        BOOK_WIDTH / 2 - 0.32;
+
+    const pageHeight =
+        BOOK_HEIGHT - 0.42;
+
+    const pageGeometry =
+        new THREE.PlaneGeometry(
+            pageWidth,
+            pageHeight,
+            12,
+            1
+        );
+
+    pageGeometry.translate(
+        pageWidth / 2,
+        0,
+        0
+    );
+
+    const pageMaterial =
+        new THREE.MeshStandardMaterial({
+            color:
+                i % 3 === 0
+                    ? 0xd5bb8d
+                    : 0xe8d5af,
+
+            roughness:0.82,
+
+            metalness:0.01,
+
+            side:
+                THREE.DoubleSide
+        });
+
+    const turningPage =
+        new THREE.Mesh(
+            pageGeometry,
+            pageMaterial
+        );
+
+    turningPage.rotation.x =
+        Math.PI / 2;
+
+    pivot.add(
+        turningPage
+    );
+
+    book.add(pivot);
+
+    turningPages.push({
+        pivot:pivot,
+        mesh:turningPage,
+        index:i,
+        phase:i / pageTurnCount,
+        random:
+            Math.random() *
+            Math.PI * 2
+    });
+
+}
+
+
+/* =========================================
+   PAGE CURVE EFFECT
+========================================= */
+
+function updatePageCurves(
+    scrollProgress,
+    elapsedTime
+) {
+
+    turningPages.forEach(
+        (pageData) => {
+
+            const pivot =
+                pageData.pivot;
+
+            const mesh =
+                pageData.mesh;
+
+            const phase =
+                pageData.phase;
+
+            const localProgress =
+                THREE.MathUtils.clamp(
+                    (
+                        scrollProgress * 2.5 -
+                        phase * 0.75
+                    ),
+                    0,
+                    1
+                );
+
+            const wave =
+                Math.sin(
+                    localProgress *
+                    Math.PI
+                );
+
+            pivot.rotation.z =
+                -localProgress *
+                Math.PI *
+                0.96;
+
+            mesh.rotation.y =
+                wave *
+                0.2;
+
+            mesh.rotation.x =
+                Math.PI / 2 +
+                Math.sin(
+                    elapsedTime * 1.5 +
+                    pageData.random
+                ) *
+                wave *
+                0.025;
+
+            pivot.position.y =
+                wave *
+                0.06;
+
+            pivot.position.z =
+                0.32 -
+                pageData.index *
+                0.035 +
+                wave *
+                0.1;
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   BOOK FLOATING
+========================================= */
+
+function updateBookFloating(
+    elapsedTime
+) {
+
+    const scrollFactor =
+        storyState.progress;
+
+    const floatStrength =
+        1 -
+        Math.min(
+            scrollFactor * 1.5,
+            0.85
+        );
+
+    book.position.y +=
+        Math.sin(
+            elapsedTime * 0.9
+        ) *
+        0.0015 *
+        floatStrength;
+
+    book.rotation.z +=
+        Math.sin(
+            elapsedTime * 0.65
+        ) *
+        0.0005 *
+        floatStrength;
+
+}
+
+
+/* =========================================
+   BOOK MOUSE PARALLAX
+========================================= */
+
+function updateBookParallax() {
+
+    const strength =
+        window.innerWidth < 768
+            ? 0
+            : 1;
+
+    const scrollFactor =
+        1 -
+        Math.min(
+            storyState.progress,
+            0.85
+        );
+
+    book.rotation.y +=
+        (
+            mouse.x *
+            0.12 *
+            strength *
+            scrollFactor
+            -
+            book.rotation.y
+        ) *
+        0.008;
+
+}
+
+
+/* =========================================
+   CAMERA PARALLAX
+========================================= */
+
+function updateCameraParallax() {
+
+    if (
+        window.innerWidth < 768
+    ) return;
+
+    const targetX =
+        mouse.x * 0.35;
+
+    const targetY =
+        mouse.y * 0.2;
+
+    camera.position.x +=
+        (
+            targetX -
+            camera.position.x
+        ) *
+        0.006;
+
+    camera.position.y +=
+        (
+            targetY -
+            camera.position.y
+        ) *
+        0.004;
+
+}
+
+
+/* =========================================
+   DUST ANIMATION
+========================================= */
+
+function updateDust(
+    elapsedTime
+) {
+
+    dust.rotation.y =
+        elapsedTime *
+        0.012;
+
+    dust.rotation.x =
+        Math.sin(
+            elapsedTime *
+            0.08
+        ) * 0.08;
+
+    const positions =
+        dustGeometry.attributes
+            .position.array;
+
+    for (
+        let i = 1;
+        i < dustCount;
+        i += 6
+    ) {
+
+        const i3 =
+            i * 3;
+
+        positions[i3 + 1] +=
+            Math.sin(
+                elapsedTime * 0.7 +
+                i * 0.08
+            ) *
+            0.0008;
+
+    }
+
+    dustGeometry.attributes
+        .position.needsUpdate =
+        true;
+
+}
+
+
+/* =========================================
+   PAPER PARTICLES ANIMATION
+========================================= */
+
+function updatePaperParticles(
+    elapsedTime
+) {
+
+    paperParticles.children.forEach(
+        (paper, index) => {
+
+            const data =
+                paper.userData;
+
+            paper.rotation.x +=
+                data.rotationSpeed;
+
+            paper.rotation.y +=
+                data.rotationSpeed *
+                0.7;
+
+            paper.rotation.z +=
+                data.rotationSpeed *
+                0.45;
+
+            paper.position.y +=
+                Math.sin(
+                    elapsedTime *
+                    data.speed +
+                    data.offset
+                ) *
+                0.003;
+
+            paper.position.x +=
+                Math.cos(
+                    elapsedTime *
+                    data.speed *
+                    0.7 +
+                    data.offset
+                ) *
+                0.0015;
+
+            paper.position.z +=
+                Math.sin(
+                    elapsedTime *
+                    data.speed *
+                    0.5 +
+                    index
+                ) *
+                0.001;
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   LIGHT ANIMATION
+========================================= */
+
+function updateLights(
+    elapsedTime
+) {
+
+    warmLight.intensity =
+        35 +
+        Math.sin(
+            elapsedTime * 1.4
+        ) * 5;
+
+    sideLight.intensity =
+        24 +
+        Math.cos(
+            elapsedTime * 0.9
+        ) * 5;
+
+    rimLight.intensity =
+        18 +
+        Math.sin(
+            elapsedTime * 1.8
+        ) * 4;
+
+    warmLight.position.x =
+        -4 +
+        Math.sin(
+            elapsedTime * 0.35
+        ) * 1.2;
+
+    warmLight.position.y =
+        5 +
+        Math.cos(
+            elapsedTime * 0.4
+        ) * 0.7;
+
+    sideLight.position.x =
+        5 +
+        Math.cos(
+            elapsedTime * 0.5
+        ) * 0.8;
+
+}
+
+
+/* =========================================
+   GLOW PULSE
+========================================= */
+
+function updateBookGlow(
+    elapsedTime
+) {
+
+    const pulse =
+        (
+            Math.sin(
+                elapsedTime * 2
+            ) + 1
+        ) / 2;
+
+    const scrollGlow =
+        Math.min(
+            storyState.progress * 2,
+            1
+        );
+
+    bookGlow.intensity =
+        2 +
+        pulse * 2 +
+        scrollGlow * 8;
+
+}
+
+
+/* =========================================
+   BOOK BREATHING SCALE
+========================================= */
+
+function updateBookBreathing(
+    elapsedTime
+) {
+
+    const breathing =
+        1 +
+        Math.sin(
+            elapsedTime * 0.8
+        ) * 0.004;
+
+    const futureScale =
+        THREE.MathUtils.lerp(
+            1,
+            0.7,
+            Math.max(
+                0,
+                (
+                    storyState.progress -
+                    0.75
+                ) * 4
+            )
+        );
+
+    book.scale.setScalar(
+        breathing *
+        futureScale
+    );
+
+}
+
+
+/* =========================================
+   DEPTH OF STORY COLOR
+========================================= */
+
+const backgroundColor =
+    new THREE.Color(
+        0x090706
+    );
+
+const warmColor =
+    new THREE.Color(
+        0x2b1a10
+    );
+
+const deepColor =
+    new THREE.Color(
+        0x070606
+    );
+
+
+function updateSceneMood() {
+
+    const progress =
+        storyState.progress;
+
+    if (
+        progress < 0.4
+    ) {
+
+        backgroundColor.lerpColors(
+            deepColor,
+            warmColor,
+            progress / 0.4
+        );
+
+    } else {
+
+        backgroundColor.lerpColors(
+            warmColor,
+            deepColor,
+            (
+                progress - 0.4
+            ) / 0.6
+        );
+
+    }
+
+    renderer.setClearColor(
+        backgroundColor,
+        0
+    );
+
+}
+
+
+/* =========================================
+   HERO TEXT ANIMATION
+========================================= */
+
+gsap.from(
+    ".hero-kicker",
+    {
+        opacity:0,
+        y:25,
+        duration:1,
+        delay:.3,
+        ease:"power3.out"
+    }
+);
+
+gsap.from(
+    ".hero-title .line",
+    {
+        yPercent:120,
+        stagger:.12,
+        duration:1.4,
+        delay:.4,
+        ease:"power4.out"
+    }
+);
+
+gsap.from(
+    ".hero-subtitle",
+    {
+        opacity:0,
+        y:25,
+        duration:1,
+        delay:.85,
+        ease:"power3.out"
+    }
+);
+
+gsap.from(
+    ".hero-actions",
+    {
+        opacity:0,
+        y:25,
+        duration:1,
+        delay:1,
+        ease:"power3.out"
+    }
+);
+
+
+/* =========================================
+   REVEAL ANIMATIONS
+========================================= */
+
+document.querySelectorAll(
+    ".reveal-up"
+).forEach(
+    (element) => {
+
+        gsap.to(
+            element,
+            {
+                opacity:1,
+                y:0,
+                duration:1.2,
+                ease:"power3.out",
+                scrollTrigger:{
+                    trigger:element,
+                    start:"top 85%"
+                }
+            }
+        );
+
+    }
+);
+
+
+document.querySelectorAll(
+    ".reveal-left"
+).forEach(
+    (element) => {
+
+        gsap.to(
+            element,
+            {
+                opacity:1,
+                x:0,
+                duration:1.2,
+                ease:"power3.out",
+                scrollTrigger:{
+                    trigger:element,
+                    start:"top 80%"
+                }
+            }
+        );
+
+    }
+);
+
+
+document.querySelectorAll(
+    ".reveal-right"
+).forEach(
+    (element) => {
+
+        gsap.to(
+            element,
+            {
+                opacity:1,
+                x:0,
+                duration:1.3,
+                ease:"power3.out",
+                scrollTrigger:{
+                    trigger:element,
+                    start:"top 80%"
+                }
+            }
+        );
+
+    }
+);
+
+
+document.querySelectorAll(
+    ".scale-in"
+).forEach(
+    (element) => {
+
+        gsap.to(
+            element,
+            {
+                opacity:1,
+                scale:1,
+                duration:1.3,
+                ease:"power3.out",
+                scrollTrigger:{
+                    trigger:element,
+                    start:"top 82%"
+                }
+            }
+        );
+
+    }
+);
+
+
+/* =========================================
+   MEMORY CARD CINEMATIC REVEAL
+========================================= */
+
+gsap.fromTo(
+    ".memory-card",
+    {
+        opacity:0,
+        y:100,
+        rotateX:8
+    },
+    {
+        opacity:1,
+        y:0,
+        rotateX:0,
+        stagger:.18,
+        duration:1.2,
+        ease:"power3.out",
+        scrollTrigger:{
+            trigger:".memory-grid",
+            start:"top 82%"
+        }
+    }
+);
+
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+ScrollTrigger.create({
+
+    start:"top -60",
+
+    onUpdate:self => {
+
+        const navbar =
+            document.getElementById(
+                "navbar"
+            );
+
+        navbar.classList.toggle(
+            "scrolled",
+            window.scrollY > 60
+        );
+
+    }
+
+});
+
+
+/* =========================================
+   MOBILE MENU
+========================================= */
+
+const menuToggle =
+    document.getElementById(
+        "menuToggle"
+    );
+
+menuToggle.addEventListener(
+    "click",
+    () => {
+
+        const navbar =
+            document.getElementById(
+                "navbar"
+            );
+
+        navbar.classList.toggle(
+            "mobile-open"
+        );
+
+    }
+);
+
+
+/* =========================================
+   MOBILE MENU STYLE
+========================================= */
+
+const mobileStyle =
+    document.createElement(
+        "style"
+    );
+
+mobileStyle.textContent = `
+
+@media(max-width:900px){
+
+    #navbar.mobile-open{
+        background:
+            rgba(9,7,6,.96);
+    }
+
+    #navbar.mobile-open .nav-links{
+        position:absolute;
+        top:100%;
+        left:0;
+        width:100%;
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:0;
+        padding:20px;
+        border-bottom:
+            1px solid rgba(232,216,188,.12);
+        background:
+            rgba(9,7,6,.96);
+    }
+
+    #navbar.mobile-open .nav-links a{
+        padding:16px 10px;
+        border-bottom:
+            1px solid rgba(255,255,255,.06);
+    }
+
+    #navbar.mobile-open .nav-links .nav-cta{
+        margin-top:12px;
+        text-align:center;
+    }
+
+}
+
+`;
+
+document.head.appendChild(
+    mobileStyle
+);
+
+
+/* =========================================
+   RESIZE
+========================================= */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+        renderer.setPixelRatio(
+            Math.min(
+                window.devicePixelRatio,
+                2
+            )
+        );
+
+        ScrollTrigger.refresh();
+
+    }
+);
+
+
+/* =========================================
+   PAGE VISIBILITY
+========================================= */
+
+let pageVisible =
+    true;
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        pageVisible =
+            !document.hidden;
+
+    }
+);
+
+
+/* =========================================
+   MAIN ANIMATION LOOP
+========================================= */
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+    if (
+        !pageVisible
+    ) return;
+
+    const elapsedTime =
+        clock.getElapsedTime();
+
+    updateMouseMotion();
+
+    updatePageCurves(
+        storyState.progress,
+        elapsedTime
+    );
+
+    updateBookFloating(
+        elapsedTime
+    );
+
+    updateBookParallax();
+
+    updateCameraParallax();
+
+    updateDust(
+        elapsedTime
+    );
+
+    updatePaperParticles(
+        elapsedTime
+    );
+
+    updateLights(
+        elapsedTime
+    );
+
+    updateBookGlow(
+        elapsedTime
+    );
+
+    updateBookBreathing(
+        elapsedTime
+    );
+
+    updateSceneMood();
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
+
+
+/* =========================================
+   PART 4 SẼ DÁN LIỀN NGAY DƯỚI ĐÂY
+========================================= */
+
+  /* =========================================
+   PART 4 - FLYING PAGES + 3D MEMORIES
+========================================= */
+
+
+/* =========================================
+   MEMORY WORLD
+========================================= */
+
+const memoryWorld =
+    new THREE.Group();
+
+scene.add(memoryWorld);
+
+memoryWorld.position.set(
+    0,
+    -0.5,
+    -8
+);
+
+
+/* =========================================
+   MEMORY PARTICLES
+========================================= */
+
+const memoryParticles =
+    new THREE.Group();
+
+memoryWorld.add(
+    memoryParticles
+);
+
+
+for (
+    let i = 0;
+    i < 140;
+    i++
+) {
+
+    const size =
+        0.015 +
+        Math.random() * 0.045;
+
+    const particle =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                size,
+                8,
+                8
+            ),
+            new THREE.MeshBasicMaterial({
+                color:
+                    Math.random() > 0.35
+                        ? 0xe8bd72
+                        : 0xffffff,
+
+                transparent:true,
+                opacity:
+                    0.25 +
+                    Math.random() * 0.65
+            })
+        );
+
+    particle.position.set(
+        (Math.random() - 0.5) * 18,
+        (Math.random() - 0.5) * 12,
+        (Math.random() - 0.5) * 12
+    );
+
+    particle.userData = {
+        speed:
+            0.2 +
+            Math.random() * 0.8,
+
+        offset:
+            Math.random() *
+            Math.PI * 2,
+
+        baseY:
+            particle.position.y
+    };
+
+    memoryParticles.add(
+        particle
+    );
+
+}
+
+
+/* =========================================
+   CREATE MEMORY FRAME
+========================================= */
+
+function createMemoryFrame(
+    title,
+    index,
+    x,
+    y,
+    z,
+    rotationY
+) {
+
+    const group =
+        new THREE.Group();
+
+    group.position.set(
+        x,
+        y,
+        z
+    );
+
+    group.rotation.y =
+        rotationY;
+
+
+    /* FRAME */
+
+    const frame =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                3.4,
+                4.2,
+                0.12
+            ),
+            new THREE.MeshStandardMaterial({
+                color:0x9c703e,
+                roughness:0.35,
+                metalness:0.65
+            })
+        );
+
+    group.add(frame);
+
+
+    /* INNER DARK IMAGE */
+
+    const image =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                3.05,
+                3.85
+            ),
+            new THREE.MeshStandardMaterial({
+                color:
+                    index === 0
+                        ? 0x5c3c24
+                        : index === 1
+                        ? 0x3c3027
+                        : 0x4b2d20,
+
+                emissive:
+                    index === 0
+                        ? 0x201005
+                        : index === 1
+                        ? 0x12100c
+                        : 0x210d05,
+
+                emissiveIntensity:0.35,
+
+                roughness:0.75
+            })
+        );
+
+    image.position.z =
+        0.075;
+
+    group.add(image);
+
+
+    /* LIGHT CIRCLE */
+
+    const glow =
+        new THREE.Mesh(
+            new THREE.CircleGeometry(
+                0.75,
+                48
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xe8bd72,
+                transparent:true,
+                opacity:0.12
+            })
+        );
+
+    glow.position.set(
+        0,
+        0.55,
+        0.09
+    );
+
+    group.add(glow);
+
+
+    /* SMALL ORBIT */
+
+    const orbit =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                0.9,
+                0.008,
+                8,
+                64
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xe8bd72,
+                transparent:true,
+                opacity:0.45
+            })
+        );
+
+    orbit.position.set(
+        0,
+        0.55,
+        0.1
+    );
+
+    group.add(orbit);
+
+
+    /* BOTTOM PANEL */
+
+    const bottomPanel =
+        new THREE.Mesh(
+            new THREE.PlaneGeometry(
+                3.05,
+                0.8
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0x0d0907,
+                transparent:true,
+                opacity:0.72
+            })
+        );
+
+    bottomPanel.position.set(
+        0,
+        -1.45,
+        0.09
+    );
+
+    group.add(bottomPanel);
+
+
+    /* FRAME LIGHT */
+
+    const light =
+        new THREE.PointLight(
+            0xffbd66,
+            2.5,
+            6
+        );
+
+    light.position.set(
+        0,
+        1,
+        1.5
+    );
+
+    group.add(light);
+
+
+    /* DATA */
+
+    group.userData = {
+        title:title,
+        index:index,
+        baseX:x,
+        baseY:y,
+        baseZ:z,
+        baseRotationY:rotationY,
+        glow:glow,
+        orbit:orbit,
+        image:image,
+        phase:
+            index * 1.7
+    };
+
+    memoryWorld.add(group);
+
+    return group;
+
+}
+
+
+/* =========================================
+   CREATE 3 MEMORY PORTALS
+========================================= */
+
+const memoryFrames = [];
+
+memoryFrames.push(
+    createMemoryFrame(
+        "THE BEGINNING",
+        0,
+        -4.5,
+        0,
+        0,
+        0.35
+    )
+);
+
+memoryFrames.push(
+    createMemoryFrame(
+        "THE MOMENT",
+        1,
+        0,
+        0.6,
+        -1.5,
+        0
+    )
+);
+
+memoryFrames.push(
+    createMemoryFrame(
+        "THE FUTURE",
+        2,
+        4.5,
+        -0.2,
+        0,
+        -0.35
+    )
+);
+
+
+/* =========================================
+   FLYING PAGE SYSTEM
+========================================= */
+
+const flyingPages =
+    new THREE.Group();
+
+scene.add(flyingPages);
+
+
+const flyingPageData =
+    [];
+
+
+for (
+    let i = 0;
+    i < 36;
+    i++
+) {
+
+    const width =
+        0.6 +
+        Math.random() * 0.85;
+
+    const height =
+        0.8 +
+        Math.random() * 1.1;
+
+    const pageGeometry =
+        new THREE.PlaneGeometry(
+            width,
+            height,
+            4,
+            4
+        );
+
+    const pageMaterial =
+        new THREE.MeshStandardMaterial({
+            color:
+                Math.random() > 0.25
+                    ? 0xe5d1ab
+                    : 0xb99b6c,
+
+            side:
+                THREE.DoubleSide,
+
+            transparent:true,
+
+            opacity:
+                0.35 +
+                Math.random() * 0.55,
+
+            roughness:0.82
+        });
+
+    const page =
+        new THREE.Mesh(
+            pageGeometry,
+            pageMaterial
+        );
+
+
+    const startX =
+        (Math.random() - 0.5) * 4;
+
+    const startY =
+        (Math.random() - 0.5) * 2;
+
+    const startZ =
+        1 +
+        Math.random() * 2;
+
+
+    page.position.set(
+        startX,
+        startY,
+        startZ
+    );
+
+
+    page.rotation.set(
+        Math.random() * Math.PI,
+        Math.random() * Math.PI,
+        Math.random() * Math.PI
+    );
+
+
+    page.userData = {
+
+        startX:startX,
+        startY:startY,
+        startZ:startZ,
+
+        targetX:
+            (Math.random() - 0.5) * 18,
+
+        targetY:
+            (Math.random() - 0.5) * 14,
+
+        targetZ:
+            -5 -
+            Math.random() * 12,
+
+        rotateX:
+            (Math.random() - 0.5) *
+            Math.PI * 5,
+
+        rotateY:
+            (Math.random() - 0.5) *
+            Math.PI * 5,
+
+        rotateZ:
+            (Math.random() - 0.5) *
+            Math.PI * 5,
+
+        baseRotationX:
+            page.rotation.x,
+
+        baseRotationY:
+            page.rotation.y,
+
+        baseRotationZ:
+            page.rotation.z,
+
+        phase:
+            Math.random() *
+            Math.PI * 2,
+
+        speed:
+            0.2 +
+            Math.random() * 0.8,
+
+        active:
+            false
+    };
+
+
+    flyingPages.add(page);
+
+    flyingPageData.push(page);
+
+}
+
+
+/* =========================================
+   PAGE EXPLOSION PROGRESS
+========================================= */
+
+const pageExplosionState = {
+    progress:0
+};
+
+
+ScrollTrigger.create({
+
+    trigger:"#memories",
+
+    start:"top 85%",
+
+    end:"bottom 10%",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        pageExplosionState.progress =
+            self.progress;
+
+    }
+
+});
+
+
+/* =========================================
+   UPDATE FLYING PAGES
+========================================= */
+
+function updateFlyingPages(
+    elapsedTime
+) {
+
+    const progress =
+        pageExplosionState.progress;
+
+    flyingPageData.forEach(
+        (page, index) => {
+
+            const data =
+                page.userData;
+
+            const delay =
+                index /
+                flyingPageData.length *
+                0.45;
+
+            const localProgress =
+                THREE.MathUtils.clamp(
+                    (
+                        progress -
+                        delay
+                    ) / 0.55,
+                    0,
+                    1
+                );
+
+            const ease =
+                localProgress *
+                localProgress *
+                (
+                    3 -
+                    2 *
+                    localProgress
+                );
+
+
+            page.position.x =
+                THREE.MathUtils.lerp(
+                    data.startX,
+                    data.targetX,
+                    ease
+                );
+
+
+            page.position.y =
+                THREE.MathUtils.lerp(
+                    data.startY,
+                    data.targetY,
+                    ease
+                ) +
+                Math.sin(
+                    elapsedTime *
+                    data.speed +
+                    data.phase
+                ) *
+                0.25;
+
+
+            page.position.z =
+                THREE.MathUtils.lerp(
+                    data.startZ,
+                    data.targetZ,
+                    ease
+                );
+
+
+            page.rotation.x =
+                data.baseRotationX +
+                data.rotateX *
+                ease +
+                Math.sin(
+                    elapsedTime *
+                    data.speed +
+                    data.phase
+                ) *
+                0.25;
+
+
+            page.rotation.y =
+                data.baseRotationY +
+                data.rotateY *
+                ease;
+
+
+            page.rotation.z =
+                data.baseRotationZ +
+                data.rotateZ *
+                ease +
+                Math.cos(
+                    elapsedTime *
+                    data.speed *
+                    1.3 +
+                    data.phase
+                ) *
+                0.2;
+
+
+            page.material.opacity =
+                THREE.MathUtils.lerp(
+                    0.08,
+                    0.82,
+                    Math.min(
+                        localProgress * 2,
+                        1
+                    )
+                );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   UPDATE MEMORY WORLD
+========================================= */
+
+function updateMemoryWorld(
+    elapsedTime
+) {
+
+    const progress =
+        storyState.progress;
+
+
+    memoryWorld.rotation.y =
+        Math.sin(
+            elapsedTime * 0.08
+        ) * 0.08;
+
+
+    memoryWorld.position.y =
+        -0.5 +
+        Math.sin(
+            elapsedTime * 0.25
+        ) * 0.2;
+
+
+    memoryFrames.forEach(
+        (frame) => {
+
+            const data =
+                frame.userData;
+
+            const floating =
+                Math.sin(
+                    elapsedTime *
+                    0.6 +
+                    data.phase
+                ) *
+                0.12;
+
+
+            frame.position.y =
+                data.baseY +
+                floating;
+
+
+            frame.rotation.y =
+                data.baseRotationY +
+                Math.sin(
+                    elapsedTime *
+                    0.35 +
+                    data.phase
+                ) *
+                0.06;
+
+
+            data.orbit.rotation.z +=
+                0.004 +
+                data.index * 0.001;
+
+
+            data.orbit.rotation.y =
+                Math.sin(
+                    elapsedTime *
+                    0.6 +
+                    data.phase
+                ) *
+                0.35;
+
+
+            data.glow.material.opacity =
+                0.08 +
+                (
+                    Math.sin(
+                        elapsedTime *
+                        1.5 +
+                        data.phase
+                    ) + 1
+                ) *
+                0.04;
+
+
+            data.image.material.emissiveIntensity =
+                0.22 +
+                (
+                    Math.sin(
+                        elapsedTime *
+                        1.1 +
+                        data.phase
+                    ) + 1
+                ) *
+                0.08;
+
+        }
+    );
+
+
+    memoryParticles.children.forEach(
+        (particle) => {
+
+            const data =
+                particle.userData;
+
+            particle.position.y =
+                data.baseY +
+                Math.sin(
+                    elapsedTime *
+                    data.speed +
+                    data.offset
+                ) *
+                0.35;
+
+            particle.position.x +=
+                Math.sin(
+                    elapsedTime *
+                    data.speed *
+                    0.3 +
+                    data.offset
+                ) *
+                0.001;
+
+        }
+    );
+
+
+    memoryWorld.visible =
+        progress > 0.15;
+
+}
+
+
+/* =========================================
+   MEMORY WORLD SCROLL TIMELINE
+========================================= */
+
+const memoryWorldTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#memories",
+            start:"top bottom",
+            end:"bottom top",
+            scrub:1.2
+        }
+    });
+
+
+memoryWorldTimeline
+    .fromTo(
+        memoryWorld.position,
+        {
+            z:-12
+        },
+        {
+            z:1,
+            ease:"none"
+        },
+        0
+    )
+
+    .fromTo(
+        memoryWorld.rotation,
+        {
+            x:0.4
+        },
+        {
+            x:0,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        memoryWorld.position,
+        {
+            z:8,
+            ease:"none"
+        },
+        0.72
+    )
+
+    .to(
+        memoryWorld.rotation,
+        {
+            y:-0.3,
+            ease:"none"
+        },
+        0.72
+    );
+
+
+/* =========================================
+   MEMORY FRAME SCALE ON SCROLL
+========================================= */
+
+memoryFrames.forEach(
+    (frame, index) => {
+
+        gsap.fromTo(
+            frame.scale,
+            {
+                x:0.15,
+                y:0.15,
+                z:0.15
+            },
+            {
+                x:1,
+                y:1,
+                z:1,
+
+                ease:"power2.out",
+
+                scrollTrigger:{
+                    trigger:"#memories",
+                    start:
+                        `top ${75 - index * 8}%`,
+                    end:
+                        `top ${45 - index * 5}%`,
+                    scrub:1
+                }
+            }
+        );
+
+    }
+);
+
+
+/* =========================================
+   CINEMATIC MEMORY LIGHT
+========================================= */
+
+const memoryLight =
+    new THREE.PointLight(
+        0xe8b866,
+        0,
+        25,
+        2
+    );
+
+memoryLight.position.set(
+    0,
+    1,
+    3
+);
+
+scene.add(
+    memoryLight
+);
+
+
+ScrollTrigger.create({
+
+    trigger:"#memories",
+
+    start:"top bottom",
+
+    end:"bottom top",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        const p =
+            self.progress;
+
+        memoryLight.intensity =
+            Math.sin(
+                p * Math.PI
+            ) * 14;
+
+    }
+
+});
+
+
+/* =========================================
+   EXTRA CINEMATIC RINGS
+========================================= */
+
+const portalRings =
+    new THREE.Group();
+
+scene.add(
+    portalRings
+);
+
+portalRings.position.set(
+    0,
+    0,
+    -5
+);
+
+
+for (
+    let i = 0;
+    i < 5;
+    i++
+) {
+
+    const ring =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                2 +
+                i * 0.8,
+                0.008,
+                8,
+                100
+            ),
+            new THREE.MeshBasicMaterial({
+                color:
+                    i % 2 === 0
+                        ? 0xd8a957
+                        : 0x8c6542,
+
+                transparent:true,
+
+                opacity:
+                    0.08 +
+                    i * 0.025
+            })
+        );
+
+    ring.rotation.x =
+        Math.PI / 2 +
+        i * 0.12;
+
+    ring.rotation.z =
+        i * 0.45;
+
+    ring.userData = {
+        speed:
+            0.08 +
+            i * 0.025,
+
+        index:i
+    };
+
+    portalRings.add(
+        ring
+    );
+
+}
+
+
+/* =========================================
+   UPDATE PORTAL RINGS
+========================================= */
+
+function updatePortalRings(
+    elapsedTime
+) {
+
+    portalRings.children.forEach(
+        (ring) => {
+
+            const data =
+                ring.userData;
+
+            ring.rotation.z +=
+                data.speed *
+                0.003;
+
+            ring.rotation.x =
+                Math.PI / 2 +
+                Math.sin(
+                    elapsedTime *
+                    0.3 +
+                    data.index
+                ) *
+                0.18;
+
+        }
+    );
+
+
+    portalRings.rotation.y =
+        Math.sin(
+            elapsedTime *
+            0.18
+        ) * 0.2;
+
+}
+
+
+/* =========================================
+   PORTAL SCROLL VISIBILITY
+========================================= */
+
+ScrollTrigger.create({
+
+    trigger:".quote-section",
+
+    start:"top bottom",
+
+    end:"bottom top",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        const progress =
+            self.progress;
+
+        portalRings.visible =
+            storyState.progress > 0.35;
+
+        portalRings.scale.setScalar(
+            0.5 +
+            Math.sin(
+                progress * Math.PI
+            ) * 0.8
+        );
+
+    }
+
+});
+
+
+/* =========================================
+   EXTEND MAIN ANIMATION LOOP FUNCTIONS
+========================================= */
+
+/*
+   THÊM 3 HÀM NÀY VÀO function animate()
+   Ở PHẦN 5 TÔI SẼ GỘP LẠI TOÀN BỘ
+   ANIMATION LOOP CHO BẠN.
+*/
+
+
+/* =========================================
+   PART 5 SẼ DÁN LIỀN NGAY DƯỚI ĐÂY
+========================================= */
+
+  /* =========================================
+   PART 5 - FINAL CHAPTER
+   BOOK DISSOLVE + PARTICLE LOGO
+========================================= */
+
+
+/* =========================================
+   FINAL PARTICLE WORLD
+========================================= */
+
+const finalWorld =
+    new THREE.Group();
+
+scene.add(finalWorld);
+
+finalWorld.position.set(
+    0,
+    0,
+    -4
+);
+
+finalWorld.visible =
+    false;
+
+
+/* =========================================
+   CREATE INFINITY PARTICLES
+========================================= */
+
+const finalParticleCount =
+    2200;
+
+const finalPositions =
+    new Float32Array(
+        finalParticleCount * 3
+    );
+
+const finalStartPositions =
+    new Float32Array(
+        finalParticleCount * 3
+    );
+
+const finalTargetPositions =
+    new Float32Array(
+        finalParticleCount * 3
+    );
+
+
+/* =========================================
+   INFINITY SHAPE
+========================================= */
+
+for (
+    let i = 0;
+    i < finalParticleCount;
+    i++
+) {
+
+    const i3 =
+        i * 3;
+
+    const t =
+        (
+            i /
+            finalParticleCount
+        ) *
+        Math.PI * 2;
+
+
+    const scale =
+        2.1 +
+        Math.random() * 0.35;
+
+
+    const denominator =
+        1 +
+        Math.sin(t) *
+        Math.sin(t);
+
+
+    const x =
+        scale *
+        Math.cos(t) /
+        denominator;
+
+
+    const y =
+        scale *
+        Math.sin(t) *
+        Math.cos(t) /
+        denominator;
+
+
+    const randomSpread =
+        (
+            Math.random() -
+            0.5
+        ) * 0.16;
+
+
+    finalTargetPositions[i3] =
+        x + randomSpread;
+
+
+    finalTargetPositions[i3 + 1] =
+        y + randomSpread;
+
+
+    finalTargetPositions[i3 + 2] =
+        (
+            Math.random() -
+            0.5
+        ) * 0.4;
+
+
+    finalStartPositions[i3] =
+        (
+            Math.random() -
+            0.5
+        ) * 14;
+
+
+    finalStartPositions[i3 + 1] =
+        (
+            Math.random() -
+            0.5
+        ) * 10;
+
+
+    finalStartPositions[i3 + 2] =
+        (
+            Math.random() -
+            0.5
+        ) * 12;
+
+
+    finalPositions[i3] =
+        finalStartPositions[i3];
+
+
+    finalPositions[i3 + 1] =
+        finalStartPositions[i3 + 1];
+
+
+    finalPositions[i3 + 2] =
+        finalStartPositions[i3 + 2];
+
+}
+
+
+const finalGeometry =
+    new THREE.BufferGeometry();
+
+finalGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+        finalPositions,
+        3
+    )
+);
+
+
+const finalMaterial =
+    new THREE.PointsMaterial({
+        color:0xf0c77f,
+        size:0.028,
+        transparent:true,
+        opacity:0,
+        depthWrite:false,
+        blending:
+            THREE.AdditiveBlending
+    });
+
+
+const finalParticles =
+    new THREE.Points(
+        finalGeometry,
+        finalMaterial
+    );
+
+finalWorld.add(
+    finalParticles
+);
+
+
+/* =========================================
+   FINAL STATE
+========================================= */
+
+const finalState = {
+    progress:0,
+    visible:false,
+    completed:false
+};
+
+
+/* =========================================
+   FINAL SECTION SCROLL
+========================================= */
+
+ScrollTrigger.create({
+
+    trigger:"#future",
+
+    start:"top 70%",
+
+    end:"bottom top",
+
+    scrub:true,
+
+    onEnter:() => {
+
+        finalState.visible =
+            true;
+
+        finalWorld.visible =
+            true;
+
+    },
+
+    onEnterBack:() => {
+
+        finalState.visible =
+            true;
+
+        finalWorld.visible =
+            true;
+
+    },
+
+    onLeaveBack:() => {
+
+        finalState.visible =
+            false;
+
+    },
+
+    onUpdate:self => {
+
+        finalState.progress =
+            self.progress;
+
+    }
+
+});
+
+
+/* =========================================
+   UPDATE FINAL PARTICLES
+========================================= */
+
+function updateFinalParticles(
+    elapsedTime
+) {
+
+    if (
+        !finalState.visible
+    ) return;
+
+
+    const progress =
+        THREE.MathUtils.clamp(
+            finalState.progress,
+            0,
+            1
+        );
+
+
+    const positions =
+        finalGeometry.attributes
+            .position.array;
+
+
+    for (
+        let i = 0;
+        i < finalParticleCount;
+        i++
+    ) {
+
+        const i3 =
+            i * 3;
+
+
+        const spreadProgress =
+            THREE.MathUtils.clamp(
+                progress * 1.6,
+                0,
+                1
+            );
+
+
+        const smoothProgress =
+            spreadProgress *
+            spreadProgress *
+            (
+                3 -
+                2 * spreadProgress
+            );
+
+
+        const wave =
+            Math.sin(
+                elapsedTime * 2 +
+                i * 0.08
+            ) *
+            0.025 *
+            smoothProgress;
+
+
+        positions[i3] =
+            THREE.MathUtils.lerp(
+                finalStartPositions[i3],
+                finalTargetPositions[i3],
+                smoothProgress
+            ) +
+            wave;
+
+
+        positions[i3 + 1] =
+            THREE.MathUtils.lerp(
+                finalStartPositions[i3 + 1],
+                finalTargetPositions[i3 + 1],
+                smoothProgress
+            ) +
+            Math.cos(
+                elapsedTime * 1.7 +
+                i * 0.04
+            ) *
+            0.025 *
+            smoothProgress;
+
+
+        positions[i3 + 2] =
+            THREE.MathUtils.lerp(
+                finalStartPositions[i3 + 2],
+                finalTargetPositions[i3 + 2],
+                smoothProgress
+            ) +
+            Math.sin(
+                elapsedTime * 1.2 +
+                i * 0.05
+            ) *
+            0.04 *
+            smoothProgress;
+
+    }
+
+
+    finalGeometry.attributes
+        .position.needsUpdate =
+        true;
+
+
+    finalMaterial.opacity =
+        Math.min(
+            progress * 2.2,
+            0.95
+        );
+
+
+    finalWorld.rotation.y =
+        Math.sin(
+            elapsedTime * 0.22
+        ) * 0.18;
+
+
+    finalWorld.rotation.x =
+        Math.cos(
+            elapsedTime * 0.17
+        ) * 0.08;
+
+
+    const pulse =
+        1 +
+        Math.sin(
+            elapsedTime * 1.5
+        ) * 0.035;
+
+
+    finalWorld.scale.setScalar(
+        pulse
+    );
+
+}
+
+
+/* =========================================
+   BOOK DISSOLVE PARTICLES
+========================================= */
+
+const dissolveCount =
+    1600;
+
+const dissolvePositions =
+    new Float32Array(
+        dissolveCount * 3
+    );
+
+const dissolveOriginal =
+    new Float32Array(
+        dissolveCount * 3
+    );
+
+const dissolveTarget =
+    new Float32Array(
+        dissolveCount * 3
+    );
+
+
+for (
+    let i = 0;
+    i < dissolveCount;
+    i++
+) {
+
+    const i3 =
+        i * 3;
+
+
+    dissolveOriginal[i3] =
+        (
+            Math.random() -
+            0.5
+        ) * BOOK_WIDTH;
+
+
+    dissolveOriginal[i3 + 1] =
+        (
+            Math.random() -
+            0.5
+        ) * BOOK_HEIGHT;
+
+
+    dissolveOriginal[i3 + 2] =
+        (
+            Math.random() -
+            0.5
+        ) * BOOK_DEPTH;
+
+
+    dissolveTarget[i3] =
+        dissolveOriginal[i3] +
+        (
+            Math.random() -
+            0.5
+        ) * 12;
+
+
+    dissolveTarget[i3 + 1] =
+        dissolveOriginal[i3 + 1] +
+        (
+            Math.random() *
+            8
+        );
+
+
+    dissolveTarget[i3 + 2] =
+        dissolveOriginal[i3 + 2] -
+        Math.random() * 10;
+
+
+    dissolvePositions[i3] =
+        dissolveOriginal[i3];
+
+
+    dissolvePositions[i3 + 1] =
+        dissolveOriginal[i3 + 1];
+
+
+    dissolvePositions[i3 + 2] =
+        dissolveOriginal[i3 + 2];
+
+}
+
+
+const dissolveGeometry =
+    new THREE.BufferGeometry();
+
+dissolveGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+        dissolvePositions,
+        3
+    )
+);
+
+
+const dissolveMaterial =
+    new THREE.PointsMaterial({
+        color:0xd8a957,
+        size:0.022,
+        transparent:true,
+        opacity:0,
+        depthWrite:false,
+        blending:
+            THREE.AdditiveBlending
+    });
+
+
+const dissolveParticles =
+    new THREE.Points(
+        dissolveGeometry,
+        dissolveMaterial
+    );
+
+dissolveParticles.visible =
+    false;
+
+book.add(
+    dissolveParticles
+);
+
+
+/* =========================================
+   DISSOLVE STATE
+========================================= */
+
+const dissolveState = {
+    progress:0
+};
+
+
+/* =========================================
+   BOOK DISSOLVE SCROLL TRIGGER
+========================================= */
+
+ScrollTrigger.create({
+
+    trigger:"#future",
+
+    start:"top 45%",
+
+    end:"bottom 15%",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        dissolveState.progress =
+            self.progress;
+
+    }
+
+});
+
+
+/* =========================================
+   UPDATE BOOK DISSOLVE
+========================================= */
+
+function updateBookDissolve(
+    elapsedTime
+) {
+
+    const progress =
+        THREE.MathUtils.clamp(
+            dissolveState.progress,
+            0,
+            1
+        );
+
+
+    if (
+        progress <= 0.01
+    ) {
+
+        dissolveParticles.visible =
+            false;
+
+        dissolveMaterial.opacity =
+            0;
+
+        return;
+
+    }
+
+
+    dissolveParticles.visible =
+        true;
+
+
+    const positions =
+        dissolveGeometry.attributes
+            .position.array;
+
+
+    const smooth =
+        progress *
+        progress *
+        (
+            3 -
+            2 * progress
+        );
+
+
+    for (
+        let i = 0;
+        i < dissolveCount;
+        i++
+    ) {
+
+        const i3 =
+            i * 3;
+
+
+        positions[i3] =
+            THREE.MathUtils.lerp(
+                dissolveOriginal[i3],
+                dissolveTarget[i3],
+                smooth
+            ) +
+            Math.sin(
+                elapsedTime * 1.5 +
+                i * 0.07
+            ) *
+            progress *
+            0.08;
+
+
+        positions[i3 + 1] =
+            THREE.MathUtils.lerp(
+                dissolveOriginal[i3 + 1],
+                dissolveTarget[i3 + 1],
+                smooth
+            ) +
+            Math.cos(
+                elapsedTime * 1.2 +
+                i * 0.05
+            ) *
+            progress *
+            0.08;
+
+
+        positions[i3 + 2] =
+            THREE.MathUtils.lerp(
+                dissolveOriginal[i3 + 2],
+                dissolveTarget[i3 + 2],
+                smooth
+
+    };
+
+
+    dissolveGeometry.attributes
+        .position.needsUpdate =
+        true;
+
+
+    dissolveMaterial.opacity =
+        Math.sin(
+            progress * Math.PI
+        ) * 0.85;
+
+
+    const bookVisibility =
+        1 -
+        Math.max(
+            0,
+            (
+                progress -
+                0.25
+            ) / 0.75
+        );
+
+
+    book.traverse(
+        (object) => {
+
+            if (
+                object.isMesh &&
+                object.material &&
+                object.material.transparent
+            ) {
+
+                object.material.opacity =
+                    Math.min(
+                        object.material.opacity,
+                        bookVisibility
+                    );
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   FINAL CENTRAL LIGHT
+========================================= */
+
+const finalLight =
+    new THREE.PointLight(
+        0xf5c678,
+        0,
+        35,
+        2
+    );
+
+finalLight.position.set(
+    0,
+    0,
+    2
+);
+
+scene.add(
+    finalLight
+);
+
+
+/* =========================================
+   UPDATE FINAL LIGHT
+========================================= */
+
+function updateFinalLight(
+    elapsedTime
+) {
+
+    const progress =
+        finalState.progress;
+
+
+    const intensity =
+        Math.sin(
+            progress * Math.PI
+        ) * 18;
+
+
+    finalLight.intensity =
+        intensity +
+        Math.sin(
+            elapsedTime * 2
+        ) * 1.5;
+
+
+    finalLight.position.y =
+        Math.sin(
+            elapsedTime * 0.8
+        ) * 0.5;
+
+
+    finalLight.position.z =
+        2 +
+        Math.cos(
+            elapsedTime * 0.6
+        ) * 1;
+
+}
+
+
+/* =========================================
+   FINAL CAMERA CINEMATIC MOVEMENT
+========================================= */
+
+const finalCameraTimeline =
+    gsap.timeline({
+        scrollTrigger:{
+            trigger:"#future",
+            start:"top bottom",
+            end:"bottom top",
+            scrub:1.2
+        }
+    });
+
+
+finalCameraTimeline
+    .to(
+        camera.position,
+        {
+            x:0,
+            y:0.2,
+            z:8,
+            ease:"none"
+        },
+        0
+    )
+
+    .to(
+        camera.position,
+        {
+            x:0,
+            y:0,
+            z:6.5,
+            ease:"none"
+        },
+        0.55
+    )
+
+    .to(
+        camera.position,
+        {
+            x:0,
+            y:0,
+            z:9.5,
+            ease:"none"
+        },
+        0.85
+    );
+
+
+/* =========================================
+   FINAL TEXT GLOW
+========================================= */
+
+const futureTitle =
+    document.querySelector(
+        ".future-title"
+    );
+
+
+ScrollTrigger.create({
+
+    trigger:"#future",
+
+    start:"top 60%",
+
+    end:"bottom 25%",
+
+    scrub:true,
+
+    onUpdate:self => {
+
+        const progress =
+            self.progress;
+
+
+        futureTitle.style.textShadow =
+            `
+            0 0 ${progress * 30}px
+            rgba(215,173,108,${progress * 0.28})
+            `;
+
+    }
+
+});
+
+
+/* =========================================
+   FINAL PARTICLE PORTAL
+========================================= */
+
+const finalRingGroup =
+    new THREE.Group();
+
+finalWorld.add(
+    finalRingGroup
+);
+
+
+for (
+    let i = 0;
+    i < 7;
+    i++
+) {
+
+    const radius =
+        3.2 +
+        i * 0.28;
+
+
+    const ring =
+        new THREE.Mesh(
+            new THREE.TorusGeometry(
+                radius,
+                0.006,
+                8,
+                100
+            ),
+            new THREE.MeshBasicMaterial({
+                color:
+                    i % 2 === 0
+                        ? 0xf0c77f
+                        : 0x9f7040,
+
+                transparent:true,
+
+                opacity:
+                    0.06 +
+                    i * 0.015
+            })
+        );
+
+
+    ring.rotation.x =
+        Math.PI / 2;
+
+
+    ring.rotation.z =
+        i * 0.42;
+
+
+    ring.userData = {
+        speed:
+            0.001 +
+            i * 0.0006,
+
+        offset:
+            i
+    };
+
+
+    finalRingGroup.add(
+        ring
+    );
+
+}
+
+
+/* =========================================
+   UPDATE FINAL RINGS
+========================================= */
+
+function updateFinalRings(
+    elapsedTime
+) {
+
+    if (
+        !finalState.visible
+    ) return;
+
+
+    finalRingGroup.children.forEach(
+        (ring) => {
+
+            ring.rotation.z +=
+                ring.userData.speed *
+                2;
+
+
+            ring.rotation.x =
+                Math.PI / 2 +
+                Math.sin(
+                    elapsedTime *
+                    0.5 +
+                    ring.userData.offset
+                ) *
+                0.12;
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   FINAL FLOATING PARTICLES
+========================================= */
+
+const finalDust =
+    new THREE.Group();
+
+finalWorld.add(
+    finalDust
+);
+
+
+for (
+    let i = 0;
+    i < 120;
+    i++
+) {
+
+    const particle =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.012 +
+                Math.random() * 0.025,
+                6,
+                6
+            ),
+            new THREE.MeshBasicMaterial({
+                color:0xf4cf91,
+                transparent:true,
+                opacity:
+                    0.2 +
+                    Math.random() * 0.6
+            })
+        );
+
+
+    const radius =
+        2.5 +
+        Math.random() * 4;
+
+
+    const angle =
+        Math.random() *
+        Math.PI * 2;
+
+
+    particle.position.set(
+        Math.cos(angle) * radius,
+        (
+            Math.random() -
+            0.5
+        ) * 5,
+        Math.sin(angle) * radius
+    );
+
+
+    particle.userData = {
+        radius:radius,
+        angle:angle,
+        speed:
+            0.08 +
+            Math.random() * 0.2,
+
+        offset:
+            Math.random() *
+            Math.PI * 2
+    };
+
+
+    finalDust.add(
+        particle
+    );
+
+}
+
+
+/* =========================================
+   UPDATE FINAL DUST
+========================================= */
+
+function updateFinalDust(
+    elapsedTime
+) {
+
+    finalDust.children.forEach(
+        (particle) => {
+
+            const data =
+                particle.userData;
+
+
+            const angle =
+                data.angle +
+                elapsedTime *
+                data.speed;
+
+
+            particle.position.x =
+                Math.cos(angle) *
+                data.radius;
+
+
+            particle.position.z =
+                Math.sin(angle) *
+                data.radius;
+
+
+            particle.position.y +=
+                Math.sin(
+                    elapsedTime *
+                    0.8 +
+                    data.offset
+                ) *
+                0.002;
+
+
+            particle.rotation.x +=
+                0.01;
+
+            particle.rotation.y +=
+                0.015;
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   LOADER FINISH
+========================================= */
+
+let loadingProgress = 0;
+
+const loaderProgress =
+    document.getElementById(
+        "loaderProgress"
+    );
+
+const loaderPercent =
+    document.getElementById(
+        "loaderPercent"
+    );
+
+
+const loadingInterval =
+    setInterval(
+        () => {
+
+            loadingProgress +=
+                Math.random() * 12 + 3;
+
+
+            if (
+                loadingProgress >= 100
+            ) {
+
+                loadingProgress = 100;
+
+                clearInterval(
+                    loadingInterval
+                );
+
+
+                setTimeout(
+                    () => {
+
+                        gsap.to(
+                            "#loader",
+                            {
+                                opacity:0,
+                                duration:.8,
+                                ease:"power3.inOut",
+
+                                onComplete:() => {
+
+                                    document
+                                        .getElementById(
+                                            "loader"
+                                        )
+                                        .style.display =
+                                        "none";
+
+
+                                    document.body
+                                        .classList.remove(
+                                            "loading"
+                                        );
+
+
+                                    ScrollTrigger.refresh();
+
+                                }
+                            }
+                        );
+
+                    },
+                    400
+                );
+
+            }
+
+
+            loaderProgress.style.width =
+                loadingProgress + "%";
+
+
+            loaderPercent.textContent =
+                Math.floor(
+                    loadingProgress
+                ) + "%";
+
+        },
+        130
+    );
+
+
+/* =========================================
+   PART 6 SẼ DÁN LIỀN NGAY DƯỚI ĐÂY
+========================================= */
+
+  /* =========================================
+   PART 6 - FINAL ENGINE
+   FIX + COMPLETE ANIMATION SYSTEM
+========================================= */
+
+
+/* =========================================
+   EXTENDED ANIMATION FUNCTIONS
+========================================= */
+
+function updateAdvancedWorld(
+    elapsedTime
+) {
+
+    updateFlyingPages(
+        elapsedTime
+    );
+
+    updateMemoryWorld(
+        elapsedTime
+    );
+
+    updatePortalRings(
+        elapsedTime
+    );
+
+    updateFinalParticles(
+        elapsedTime
+    );
+
+    updateBookDissolve(
+        elapsedTime
+    );
+
+    updateFinalLight(
+        elapsedTime
+    );
+
+    updateFinalRings(
+        elapsedTime
+    );
+
+    updateFinalDust(
+        elapsedTime
+    );
+
+}
+
+
+/* =========================================
+   SCROLL PROGRESS
+========================================= */
+
+const scrollProgressBar =
+    document.getElementById(
+        "scrollProgress"
+    );
+
+
+function updateScrollProgress() {
+
+    const scrollTop =
+        window.scrollY;
+
+    const documentHeight =
+        document.documentElement.scrollHeight -
+        window.innerHeight;
+
+    const progress =
+        documentHeight > 0
+            ? scrollTop / documentHeight
+            : 0;
+
+
+    if (
+        scrollProgressBar
+    ) {
+
+        scrollProgressBar.style.transform =
+            `scaleX(${progress})`;
+
+    }
+
+}
+
+
+/* =========================================
+   SMOOTH SCROLL INDICATOR
+========================================= */
+
+const scrollIndicator =
+    document.querySelector(
+        ".scroll-indicator"
+    );
+
+
+window.addEventListener(
+    "scroll",
+    () => {
+
+        updateScrollProgress();
+
+        if (
+            scrollIndicator
+        ) {
+
+            scrollIndicator.style.opacity =
+                window.scrollY > 120
+                    ? "0"
+                    : "1";
+
+        }
+
+    },
+    { passive:true }
+);
+
+
+/* =========================================
+   HERO BUTTON SCROLL
+========================================= */
+
+const exploreButton =
+    document.querySelector(
+        ".btn-primary"
+    );
+
+
+if (
+    exploreButton
+) {
+
+    exploreButton.addEventListener(
+        "click",
+        () => {
+
+            const target =
+                document.querySelector(
+                    "#chapter-1"
+                );
+
+            if (
+                target
+            ) {
+
+                target.scrollIntoView({
+                    behavior:"smooth"
+                });
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   SECONDARY BUTTON
+========================================= */
+
+const secondaryButton =
+    document.querySelector(
+        ".btn-secondary"
+    );
+
+
+if (
+    secondaryButton
+) {
+
+    secondaryButton.addEventListener(
+        "click",
+        () => {
+
+            const target =
+                document.querySelector(
+                    "#memories"
+                );
+
+            if (
+                target
+            ) {
+
+                target.scrollIntoView({
+                    behavior:"smooth"
+                });
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   NAVIGATION SMOOTH SCROLL
+========================================= */
+
+document.querySelectorAll(
+    'a[href^="#"]'
+).forEach(
+    (link) => {
+
+        link.addEventListener(
+            "click",
+            (event) => {
+
+                const targetId =
+                    link.getAttribute(
+                        "href"
+                    );
+
+                if (
+                    !targetId ||
+                    targetId === "#"
+                ) return;
+
+
+                const target =
+                    document.querySelector(
+                        targetId
+                    );
+
+
+                if (
+                    !target
+                ) return;
+
+
+                event.preventDefault();
+
+
+                target.scrollIntoView({
+                    behavior:"smooth",
+                    block:"start"
+                });
+
+
+                document
+                    .getElementById(
+                        "navbar"
+                    )
+                    ?.classList.remove(
+                        "mobile-open"
+                    );
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================
+   SECTION PARALLAX
+========================================= */
+
+const parallaxSections =
+    document.querySelectorAll(
+        "[data-parallax]"
+    );
+
+
+function updateSectionParallax() {
+
+    parallaxSections.forEach(
+        (section) => {
+
+            const rect =
+                section.getBoundingClientRect();
+
+
+            const progress =
+                (
+                    window.innerHeight -
+                    rect.top
+                ) /
+                (
+                    window.innerHeight +
+                    rect.height
+                );
+
+
+            const value =
+                (
+                    progress - 0.5
+                ) * 50;
+
+
+            section.style.setProperty(
+                "--parallax-y",
+                `${value}px`
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================
+   MAGNETIC BUTTON EFFECT
+========================================= */
+
+document.querySelectorAll(
+    ".magnetic"
+).forEach(
+    (button) => {
+
+        button.addEventListener(
+            "mousemove",
+            (event) => {
+
+                const rect =
+                    button.getBoundingClientRect();
+
+
+                const x =
+                    event.clientX -
+                    rect.left -
+                    rect.width / 2;
+
+
+                const y =
+                    event.clientY -
+                    rect.top -
+                    rect.height / 2;
+
+
+                button.style.transform =
+                    `
+                    translate(
+                        ${x * 0.12}px,
+                        ${y * 0.12}px
+                    )
+                    `;
+
+            }
+        );
+
+
+        button.addEventListener(
+            "mouseleave",
+            () => {
+
+                button.style.transform =
+                    "translate(0,0)";
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================
+   CUSTOM CURSOR GLOW
+========================================= */
+
+const cursorGlow =
+    document.querySelector(
+        ".cursor-glow"
+    );
+
+
+if (
+    cursorGlow &&
+    window.innerWidth > 900
+) {
+
+    window.addEventListener(
+        "mousemove",
+        (event) => {
+
+            cursorGlow.style.transform =
+                `
+                translate3d(
+                    ${event.clientX}px,
+                    ${event.clientY}px,
+                    0
+                )
+                `;
+
+        },
+        { passive:true }
+    );
+
+}
+
+
+/* =========================================
+   FINAL TEXT REVEAL
+========================================= */
+
+const finalTexts =
+    document.querySelectorAll(
+        "#future .reveal-up, #future .reveal-left, #future .reveal-right"
+    );
+
+
+finalTexts.forEach(
+    (element) => {
+
+        ScrollTrigger.create({
+
+            trigger:element,
+
+            start:"top 85%",
+
+            onEnter:() => {
+
+                element.classList.add(
+                    "active"
+                );
+
+            },
+
+            onEnterBack:() => {
+
+                element.classList.add(
+                    "active"
+                );
+
+            }
+
+        });
+
+    }
+);
+
+
+/* =========================================
+   KEYBOARD CONTROLS
+========================================= */
+
+window.addEventListener(
+    "keydown",
+    (event) => {
+
+        if (
+            event.key === "Home"
+        ) {
+
+            window.scrollTo({
+                top:0,
+                behavior:"smooth"
+            });
+
+        }
+
+
+        if (
+            event.key === "End"
+        ) {
+
+            window.scrollTo({
+                top:
+                    document.body.scrollHeight,
+                behavior:"smooth"
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================================
+   PERFORMANCE STATE
+========================================= */
+
+let frameCount = 0;
+
+let lastFpsTime =
+    performance.now();
+
+let currentFps = 60;
+
+
+function updatePerformance() {
+
+    frameCount++;
+
+
+    const now =
+        performance.now();
+
+
+    if (
+        now -
+        lastFpsTime >=
+        1000
+    ) {
+
+        currentFps =
+            frameCount;
+
+
+        frameCount =
+            0;
+
+
+        lastFpsTime =
+            now;
+
+
+        if (
+            currentFps < 30 &&
+            window.innerWidth < 1000
+        ) {
+
+            renderer.setPixelRatio(
+                1
+            );
+
+        } else {
+
+            renderer.setPixelRatio(
+                Math.min(
+                    window.devicePixelRatio,
+                    2
+                )
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =========================================
+   FINAL MAIN RENDER LOOP
+========================================= */
+
+/*
+   QUAN TRỌNG:
+   TỪ ĐÂY KHÔNG TẠO THÊM
+   requestAnimationFrame THỨ 2.
+
+   HÃY TÌM function animate() CŨ
+   Ở PHẦN 3 VÀ THAY TOÀN BỘ
+   BẰNG function animate() BÊN DƯỚI.
+*/
+
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+
+    if (
+        !pageVisible
+    ) return;
+
+
+    const elapsedTime =
+        clock.getElapsedTime();
+
+
+    /* MOUSE */
+
+    updateMouseMotion();
+
+
+    /* BOOK */
+
+    updatePageCurves(
+        storyState.progress,
+        elapsedTime
+    );
+
+    updateBookFloating(
+        elapsedTime
+    );
+
+    updateBookParallax();
+
+    updateBookBreathing(
+        elapsedTime
+    );
+
+    updateBookDissolve(
+        elapsedTime
+    );
+
+
+    /* CAMERA */
+
+    updateCameraParallax();
+
+
+    /* PARTICLES */
+
+    updateDust(
+        elapsedTime
+    );
+
+    updatePaperParticles(
+        elapsedTime
+    );
+
+    updateFlyingPages(
+        elapsedTime
+    );
+
+    updateFinalParticles(
+        elapsedTime
+    );
+
+    updateFinalDust(
+        elapsedTime
+    );
+
+
+    /* MEMORY WORLD */
+
+    updateMemoryWorld(
+        elapsedTime
+    );
+
+    updatePortalRings(
+        elapsedTime
+    );
+
+
+    /* LIGHT */
+
+    updateLights(
+        elapsedTime
+    );
+
+    updateBookGlow(
+        elapsedTime
+    );
+
+    updateFinalLight(
+        elapsedTime
+    );
+
+    updateFinalRings(
+        elapsedTime
+    );
+
+
+    /* SCENE */
+
+    updateSceneMood();
+
+    updateScrollProgress();
+
+    updateSectionParallax();
+
+    updatePerformance();
+
+
+    /* RENDER */
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+
+/* =========================================
+   PREVENT DUPLICATE ANIMATION
+========================================= */
+
+/*
+   NẾU Ở PHẦN 3 CŨ CÒN DÒNG:
+
+   animate();
+
+   THÌ GIỮ NGUYÊN 1 DÒNG ĐÓ.
+
+   KHÔNG ĐƯỢC THÊM animate();
+   LẦN THỨ 2 Ở CUỐI PHẦN NÀY.
+*/
+
+
+/* =========================================
+   FINAL WINDOW LOAD
+========================================= */
+
+window.addEventListener(
+    "load",
+    () => {
+
+        setTimeout(
+            () => {
+
+                ScrollTrigger.refresh();
+
+                updateScrollProgress();
+
+            },
+            500
+        );
+
+    }
+);
+
+
+/* =========================================
+   INTRO BOOK ENTRANCE
+========================================= */
+
+gsap.fromTo(
+    book.position,
+    {
+        y:-2,
+        z:-2
+    },
+    {
+        y:0,
+        z:0,
+
+        duration:2.4,
+
+        delay:.4,
+
+        ease:"power3.out"
+    }
+);
+
+
+gsap.fromTo(
+    book.rotation,
+    {
+        x:-0.35,
+        y:-0.8,
+        z:0.15
+    },
+    {
+        x:0,
+        y:0,
+        z:0,
+
+        duration:2.2,
+
+        delay:.4,
+
+        ease:"power3.out"
+    }
+);
+
+
+/* =========================================
+   BOOK SHADOW ENTRANCE
+========================================= */
+
+gsap.fromTo(
+    book.scale,
+    {
+        x:0.75,
+        y:0.75,
+        z:0.75
+    },
+    {
+        x:1,
+        y:1,
+        z:1,
+
+        duration:2,
+
+        delay:.45,
+
+        ease:"power3.out"
+    }
+);
+
+
+/* =========================================
+   AUTO REFRESH
+========================================= */
+
+setTimeout(
+    () => {
+
+        ScrollTrigger.refresh();
+
+    },
+    1200
+);
+
+
+/* =========================================
+   END PART 6
+   WEBSITE 3D ENGINE COMPLETE
+========================================= */
+
+
+/*
+
+/* =========================================
+   PART 7 - GALAXY + 3D GALLERY
+========================================= */
+
+
+/* =========================================
+   GALAXY STAR FIELD
+========================================= */
+
+const galaxyGroup = new THREE.Group();
+scene.add(galaxyGroup);
+
+const galaxyCount = 1800;
+const galaxyPositions = new Float32Array(galaxyCount * 3);
+const galaxyColors = new Float32Array(galaxyCount * 3);
+
+const colorA = new THREE.Color(0xf5d7a1);
+const colorB = new THREE.Color(0x8fa8ff);
+const colorC = new THREE.Color(0xffffff);
+
+for (let i = 0; i < galaxyCount; i++) {
+
+    const i3 = i * 3;
+    const radius = 5 + Math.random() * 35;
+    const angle = Math.random() * Math.PI * 2;
+    const height = (Math.random() - 0.5) * 18;
+
+    galaxyPositions[i3] = Math.cos(angle) * radius;
+    galaxyPositions[i3 + 1] = height;
+    galaxyPositions[i3 + 2] = Math.sin(angle) * radius - 12;
+
+    const randomColor = Math.random();
+
+    const starColor =
+        randomColor > 0.75
+            ? colorB
+            : randomColor > 0.35
+            ? colorA
+            : colorC;
+
+    galaxyColors[i3] = starColor.r;
+    galaxyColors[i3 + 1] = starColor.g;
+    galaxyColors[i3 + 2] = starColor.b;
+}
+
+const galaxyGeometry = new THREE.BufferGeometry();
+
+galaxyGeometry.setAttribute(
+    "position",
+    new THREE.BufferAttribute(galaxyPositions, 3)
+);
+
+galaxyGeometry.setAttribute(
+    "color",
+    new THREE.BufferAttribute(galaxyColors, 3)
+);
+
+const galaxyMaterial = new THREE.PointsMaterial({
+    size: 0.035,
+    vertexColors: true,
+    transparent: true,
+    opacity: 0.75,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending
+});
+
+const galaxyStars = new THREE.Points(
+    galaxyGeometry,
+    galaxyMaterial
+);
+
+galaxyGroup.add(galaxyStars);
+
+
+/* =========================================
+   GALAXY RINGS
+========================================= */
+
+const galaxyRings = new THREE.Group();
+galaxyGroup.add(galaxyRings);
+
+for (let i = 0; i < 8; i++) {
+
+    const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(
+            6 + i * 1.8,
+            0.008,
+            8,
+            120
+        ),
+        new THREE.MeshBasicMaterial({
+            color: i % 2 === 0 ? 0xe8bd72 : 0x7f91d1,
+            transparent: true,
+            opacity: 0.04 + i * 0.008
+        })
+    );
+
+    ring.rotation.x =
+        Math.PI / 2 +
+        (Math.random() - 0.5) * 0.8;
+
+    ring.rotation.y =
+        (Math.random() - 0.5) * 0.8;
+
+    ring.userData = {
+        speed: 0.0008 + i * 0.00025,
+        direction: i % 2 === 0 ? 1 : -1
+    };
+
+    galaxyRings.add(ring);
+}
+
+
+/* =========================================
+   3D GALLERY WORLD
+========================================= */
+
+const galleryWorld = new THREE.Group();
+scene.add(galleryWorld);
+
+galleryWorld.position.set(
+    0,
+    0,
+    -10
+);
+
+const galleryCards = [];
+
+
+/* =========================================
+   CREATE 3D GALLERY CARD
+========================================= */
+
+function createGalleryCard(
+    index,
+    angle,
+    radius
+) {
+
+    const group = new THREE.Group();
+
+    const x =
+        Math.sin(angle) * radius;
+
+    const z =
+        Math.cos(angle) * radius;
+
+    group.position.set(
+        x,
+        0,
+        z
+    );
+
+    group.lookAt(
+        0,
+        0,
+        0
+    );
+
+    const card = new THREE.Mesh(
+        new THREE.BoxGeometry(
+            3.4,
+            4.5,
+            0.18
+        ),
+        new THREE.MeshStandardMaterial({
+            color:
+                index % 3 === 0
+                    ? 0x6b4528
+                    : index % 3 === 1
+                    ? 0x302a32
+                    : 0x2e3d46,
+
+            metalness: 0.5,
+            roughness: 0.35
+        })
+    );
+
+    group.add(card);
+
+
+    const inner = new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            3.05,
+            4.12
+        ),
+        new THREE.MeshStandardMaterial({
+            color:
+                index % 3 === 0
+                    ? 0x9d7146
+                    : index % 3 === 1
+                    ? 0x596178
+                    : 0x466775,
+
+            emissive:
+                index % 3 === 0
+                    ? 0x29160a
+                    : index % 3 === 1
+                    ? 0x111624
+                    : 0x0a1c22,
+
+            emissiveIntensity: 0.35,
+            roughness: 0.7
+        })
+    );
+
+    inner.position.z = 0.1;
+    group.add(inner);
+
+
+    const glow = new THREE.PointLight(
+        index % 2 === 0
+            ? 0xf0b965
+            : 0x8ca7ff,
+        1.5,
+        7
+    );
+
+    glow.position.set(
+        0,
+        0,
+        1.5
+    );
+
+    group.add(glow);
+
+
+    group.userData = {
+        index: index,
+        angle: angle,
+        radius: radius,
+        baseY: 0,
+        phase: index * 0.8,
+        card: card,
+        inner: inner
+    };
+
+    galleryWorld.add(group);
+    galleryCards.push(group);
+}
+
+
+for (let i = 0; i < 9; i++) {
+
+    createGalleryCard(
+        i,
+        (i / 9) * Math.PI * 2,
+        7
+    );
+}
+
+
+/* =========================================
+   GALLERY SCROLL STATE
+========================================= */
+
+const galleryState = {
+    progress: 0
+};
+
+const gallerySection =
+    document.querySelector("#gallery");
+
+if (gallerySection) {
+
+    ScrollTrigger.create({
+        trigger: gallerySection,
+        start: "top bottom",
+        end: "bottom top",
+        scrub: true,
+
+        onUpdate: self => {
+            galleryState.progress = self.progress;
+        }
+    });
+}
+
+
+/* =========================================
+   UPDATE GALAXY
+========================================= */
+
+function updateGalaxy(elapsedTime) {
+
+    galaxyGroup.rotation.y =
+        elapsedTime * 0.008 +
+        mouse.x * 0.08;
+
+    galaxyGroup.rotation.x =
+        mouse.y * 0.025;
+
+
+    galaxyStars.rotation.y =
+        elapsedTime * 0.01;
+
+
+    galaxyRings.children.forEach(ring => {
+
+        ring.rotation.z +=
+            ring.userData.speed *
+            ring.userData.direction * 10;
+
+    });
+
+}
+
+
+/* =========================================
+   UPDATE GALLERY WORLD
+========================================= */
+
+function updateGallery(
+    elapsedTime
+) {
+
+    if (!gallerySection) return;
+
+    const progress =
+        galleryState.progress;
+
+    galleryWorld.rotation.y =
+        progress * Math.PI * 2.5 +
+        elapsedTime * 0.03;
+
+    galleryWorld.rotation.x =
+        Math.sin(
+            elapsedTime * 0.2
+        ) * 0.08;
+
+
+    galleryCards.forEach(cardGroup => {
+
+        const data =
+            cardGroup.userData;
+
+        cardGroup.position.y =
+            data.baseY +
+            Math.sin(
+                elapsedTime * 0.7 +
+                data.phase
+            ) * 0.28;
+
+
+        cardGroup.rotation.z =
+            Math.sin(
+                elapsedTime * 0.4 +
+                data.phase
+            ) * 0.04;
+
+
+        const pulse =
+            1 +
+            Math.sin(
+                elapsedTime * 1.2 +
+                data.phase
+            ) * 0.025;
+
+        cardGroup.scale.setScalar(
+            pulse
+        );
+
+
+        data.inner.material.emissiveIntensity =
+            0.25 +
+            Math.sin(
+                elapsedTime +
+                data.phase
+            ) * 0.08;
+
+    });
+
+
+    galleryWorld.position.z =
+        THREE.MathUtils.lerp(
+            -15,
+            1,
+            Math.min(
+                progress * 1.6,
+                1
+            )
+        );
+
+}
+
+
+/* =========================================
+   CINEMATIC CAMERA FOR GALLERY
+========================================= */
+
+if (gallerySection) {
+
+    gsap.timeline({
+        scrollTrigger: {
+            trigger: gallerySection,
+            start: "top bottom",
+            end: "bottom top",
+            scrub: 1
+        }
+    })
+
+    .to(
+        camera.position,
+        {
+            z: 7,
+            y: 0.5,
+            ease: "none"
+        },
+        0
+    )
+
+    .to(
+        camera.position,
+        {
+            z: 10,
+            y: 0,
+            ease: "none"
+        },
+        0.8
+    );
+
+}
+
+
+/* =========================================
+   STAR SHOOTING SYSTEM
+========================================= */
+
+const shootingStars = [];
+
+for (let i = 0; i < 12; i++) {
+
+    const geometry =
+        new THREE.BufferGeometry();
+
+    geometry.setFromPoints([
+        new THREE.Vector3(0, 0, 0),
+        new THREE.Vector3(1.5, 0, 0)
+    ]);
+
+    const material =
+        new THREE.LineBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0
+        });
+
+    const star =
+        new THREE.Line(
+            geometry,
+            material
+        );
+
+    star.position.set(
+        (Math.random() - 0.5) * 30,
+        (Math.random() - 0.5) * 18,
+        -10 - Math.random() * 15
+    );
+
+    star.rotation.z =
+        -0.4 -
+        Math.random() * 0.4;
+
+    star.userData = {
+        speed: 8 + Math.random() * 14,
+        delay: Math.random() * 10,
+        active: false
+    };
+
+    scene.add(star);
+    shootingStars.push(star);
+}
+
+
+/* =========================================
+   UPDATE SHOOTING STARS
+========================================= */
+
+function updateShootingStars(
+    elapsedTime
+) {
+
+    shootingStars.forEach(star => {
+
+        const data =
+            star.userData;
+
+        const cycle =
+            (
+                elapsedTime +
+                data.delay
+            ) % 6;
+
+        if (cycle < 1.2) {
+
+            star.material.opacity =
+                Math.sin(
+                    (cycle / 1.2) *
+                    Math.PI
+                ) * 0.8;
+
+            star.position.x +=
+                data.speed * 0.016;
+
+            star.position.y -=
+                data.speed * 0.006;
+
+        }
+
+        if (cycle < 0.03) {
+
+            star.position.set(
+                -12 + Math.random() * 8,
+                7 + Math.random() * 5,
+                -8 - Math.random() * 15
+            );
+
+        }
+
+    });
+
+}
+
+/* =========================================
+   PART 8 READY
+========================================= */
+   </script>
+</body>
+</html>
